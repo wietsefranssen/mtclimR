@@ -101,7 +101,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
 
   /* compute number of full model time steps per day */
   stepspday = 24/global_param.dt;
- 
+
   /* Compute number of days for MTCLIM (in local time); for sub-daily, we must pad start and end with dummy records */
   Ndays_local = Ndays;
   if (hour_offset_int != 0) Ndays_local = Ndays + 1;
@@ -182,12 +182,12 @@ void initialize_atmos(atmos_data_struct        *atmos,
   tminhour   = (int *)    calloc(Ndays_local, sizeof(double));
   tskc       = (double *) calloc(Ndays_local*24, sizeof(double));
   daily_vp   = (double *) calloc(Ndays_local, sizeof(double));
-  
+
   if (hourlyrad == NULL || prec == NULL || tair == NULL || tmax == NULL ||
       tmaxhour == NULL ||  tmin == NULL || tminhour == NULL || tskc == NULL ||
       daily_vp == NULL)
     nrerror((char*) "Memory allocation failure in initialize_atmos()");
-  
+
   /*************************************************
     Pre-processing
   *************************************************/
@@ -350,7 +350,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
           if (global_param.starthour - hour_offset_int < 0) hour += 24;
           idx = (int)((float)hour/24.0);
           atmos[rec].channel_in[j] = local_forcing_data[CHANNEL_IN][idx] / (float)(NF*stepspday); // divide evenly over the day
-          atmos[rec].channel_in[j] *= 1000/cell_area; // convert to mm over grid cell 
+          atmos[rec].channel_in[j] *= 1000/cell_area; // convert to mm over grid cell
           sum += atmos[rec].channel_in[j];
         }
         if(NF>1) atmos[rec].channel_in[NR] = sum;
@@ -369,7 +369,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
 	    atmos[rec].channel_in[i] += local_forcing_data[CHANNEL_IN][idx];
             hour++;
           }
-	  atmos[rec].channel_in[i] *= 1000/cell_area; // convert to mm over grid cell 
+	  atmos[rec].channel_in[i] *= 1000/cell_area; // convert to mm over grid cell
 	  sum += atmos[rec].channel_in[i];
         }
         if(NF>1) atmos[rec].channel_in[NR] = sum;
@@ -481,7 +481,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
       for (i = 0; i < NF; i++) {
 	atmos[rec].wind[i] = DEFAULT_WIND_SPEED;
       }
-      atmos[rec].wind[NR] = DEFAULT_WIND_SPEED;	
+      atmos[rec].wind[NR] = DEFAULT_WIND_SPEED;
     }
   }
 
@@ -490,7 +490,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
   *************************************************/
 
   /************************************************
-    Set maximum daily air temperature if provided 
+    Set maximum daily air temperature if provided
   ************************************************/
 
   if(param_set.TYPE[TMAX].SUPPLIED) {
@@ -509,7 +509,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
   }
 
   /************************************************
-    Set minimum daily air temperature if provided 
+    Set minimum daily air temperature if provided
   ************************************************/
 
   if(param_set.TYPE[TMIN].SUPPLIED) {
@@ -793,7 +793,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
   if(!param_set.TYPE[AIR_TEMP].SUPPLIED) {
 
     /**********************************************************************
-      Calculate the subdaily and daily temperature based on tmax and tmin 
+      Calculate the subdaily and daily temperature based on tmax and tmin
     **********************************************************************/
     HourlyT(1, Ndays_local, tmaxhour, tmax, tminhour, tmin, tair);
     for(rec = 0; rec < global_param.nrecs; rec++) {
@@ -857,7 +857,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
   }
 
   /**************************************
-    Estimate Atmospheric Pressure (Pa) 
+    Estimate Atmospheric Pressure (Pa)
   **************************************/
 
   if(!param_set.TYPE[PRESSURE].SUPPLIED) {
@@ -1064,7 +1064,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
       Either no observations of VP, QAIR, or REL_HUMID were supplied,
       in which case we will use MTCLIM's estimates of daily vapor pressure,
       or daily VP was supplied.
-      Now, calculate subdaily vapor pressure 
+      Now, calculate subdaily vapor pressure
     **************************************************/
 
     if (options.VP_INTERP) {
@@ -1102,7 +1102,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
           }
         }
       }
- 
+
     }
     else {
       /* Hold VP constant throughout day */
@@ -1180,10 +1180,10 @@ void initialize_atmos(atmos_data_struct        *atmos,
 
   /****************************************************************************
     calculate the daily and sub-daily longwave.  There is a separate case for
-    the full energy and the water balance modes.  For water balance mode we 
+    the full energy and the water balance modes.  For water balance mode we
     need to calculate the net longwave for the daily timestep and the incoming
     longwave for the SNOW_STEPs, for the full energy balance mode we always
-    want the incoming longwave. 
+    want the incoming longwave.
   ****************************************************************************/
 
   if ( !param_set.TYPE[LONGWAVE].SUPPLIED ) {
@@ -1235,7 +1235,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
   /****************************************************
     Determine if Snow will Fall During Each Time Step
   ****************************************************/
- 
+
   // Free temporary parameters
   free(hourlyrad);
   free(prec);
@@ -1264,7 +1264,6 @@ void initialize_atmos(atmos_data_struct        *atmos,
 
   // If OUTPUT_FORCE is set to TRUE in user_def.h then the full
   // forcing data array is dumped into a new set of files.
-//  write_forcing_file(atmos, global_param.nrecs, out_data_files, out_data);
-  write_forcing_toScreen(atmos, global_param.nrecs, out_data_files, out_data);
+  // write_forcing_toScreen(atmos, global_param.nrecs, out_data_files, out_data);
 
 }

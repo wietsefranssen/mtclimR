@@ -1,7 +1,7 @@
 #include "Rcpp.h"        // R memory io
 #include "Rdefines.h"        // R memory io
 #include "Rmath.h"    // R math functions
-#include "includeWF.h"
+// #include "includeWF.h"
 #include "vicNl.h"
 
 global_param_struct global_param;
@@ -14,13 +14,12 @@ int NF; /* array index loop counter limit for atmos struct that indicates the SN
 #include <Rcpp.h>
 using namespace Rcpp;
 // [[Rcpp::export]]
-int mtclimRun(int x, List forcing_dataR) {
+List mtclimRun(int nrecs, List forcing_dataR, List settings) {
   // printf("dddd: %f\n", forcing[0]);
   // printf("dddd: %f\n", forcing[1]);
   // printf("dddd: %f\n", forcing[(24*11688)-1]);
   // Rcpp::List xlist(forcing_dataR);
   // int n = forcing_dataR.size();
-
   // float iii;
   // NumericVector resid = as<NumericVector>(forcing_dataR[1]);
   // for(int i=0;i<11688;i++) {
@@ -48,8 +47,10 @@ int mtclimRun(int x, List forcing_dataR) {
   initialize_global();
 
   /** Read Global Control File **/
-  global_param = get_global_param_dummy();
+  // global_param = get_global_param_dummy();
+  global_param = get_global_param_R(settings);
 
+  // global_param.nrecs = nrecs;
   /** Set up output data structures **/
   out_data = create_output_list();
   out_data_files = set_output_defaults(out_data);
@@ -82,6 +83,8 @@ int mtclimRun(int x, List forcing_dataR) {
   /*******************************
    read in meteorological data
    *******************************/
+  // printf("Read meteorological forcing\n");
+
   double **forcing_data;
   /** Allocate data arrays for input forcing data **/
   forcing_data = (double **)calloc(N_FORCING_TYPES,sizeof(double*));
@@ -93,6 +96,7 @@ int mtclimRun(int x, List forcing_dataR) {
     }
   }
 
+  // Retreive forcing data from R list
   for(int i=0;i<N_FORCING_TYPES;i++) {
     if (param_set.TYPE[i].SUPPLIED) {
       NumericVector resid = as<NumericVector>(forcing_dataR[i]);
@@ -101,29 +105,117 @@ int mtclimRun(int x, List forcing_dataR) {
       }
     }
   }
-  // forcing_data = read_forcing_data_dummy(global_param, forcing_data);
-  // read_atmos_data_dummy(global_param, forcing_data);
-  fprintf(stderr, "\nRead meteorological forcing file\n");
 
   /**************************************************
    Initialize Meteological Forcing Values That
    Have not Been Specifically Set
    **************************************************/
 
-
-  printf("initialize atmos: start\n");
+  // printf("initialize atmos: start\n");
   initialize_atmos(atmos, dmy, forcing_data,
                    &soil_con, out_data_files, out_data);
-  printf("initialize atmos: end\n");
 
-  // takes a numeric input and doubles it
-  return 2 * x;
-}
+  /**************************************************
+   Output to R
+   **************************************************/
+  List outListR;
 
-extern "C" {
-  void testWFR() {
-    testWF();
+
+  NumericVector resid=forcing_dataR[2];
+  resid[3]=9999;
+  forcing_dataR[2]=resid;
+
+  int                 rec, i, j, v;
+  int                 dummy_dt;
+  int                 dt_sec;
+  double              **out_dataAllRecs;
+  out_dataAllRecs = (double **)calloc(out_data_files[0].nvars,sizeof(double*));
+  for(int i=0;i<out_data_files[0].nvars;i++) {
+      out_dataAllRecs[i] = (double *)calloc((global_param.nrecs),
+                         sizeof(double));
   }
+
+  dt_sec = global_param.dt*SECPHOUR;
+
+  for ( rec = 0; rec < global_param.nrecs; rec++ ) {
+    for ( j = 0; j < NF; j++ ) {
+
+      out_data[OUT_AIR_TEMP].data[0]  = atmos[rec].air_temp[j];
+      out_data[OUT_DENSITY].data[0]   = atmos[rec].density[j];
+      out_data[OUT_LONGWAVE].data[0]  = atmos[rec].longwave[j];
+      out_data[OUT_PREC].data[0]      = atmos[rec].prec[j];
+      out_data[OUT_PRESSURE].data[0]  = atmos[rec].pressure[j]/kPa2Pa;
+      out_data[OUT_QAIR].data[0]      = EPS * atmos[rec].vp[j]/atmos[rec].pressure[j];
+      out_data[OUT_REL_HUMID].data[0] = 100.*atmos[rec].vp[j]/(atmos[rec].vp[j]+atmos[rec].vpd[j]);
+      out_data[OUT_SHORTWAVE].data[0] = atmos[rec].shortwave[j];
+      out_data[OUT_TSKC].data[0]      = atmos[rec].tskc[j];
+      out_data[OUT_VP].data[0]        = atmos[rec].vp[j]/kPa2Pa;
+      out_data[OUT_VPD].data[0]       = atmos[rec].vpd[j]/kPa2Pa;
+      out_data[OUT_WIND].data[0]      = atmos[rec].wind[j];
+      if (out_data[OUT_AIR_TEMP].data[0] >= global_param.MAX_SNOW_TEMP) {
+        out_data[OUT_RAINF].data[0] = out_data[OUT_PREC].data[0];
+        out_data[OUT_SNOWF].data[0] = 0;
+      }
+      else if (out_data[OUT_AIR_TEMP].data[0] <= global_param.MIN_RAIN_TEMP) {
+        out_data[OUT_RAINF].data[0] = 0;
+        out_data[OUT_SNOWF].data[0] = out_data[OUT_PREC].data[0];
+      }
+      else {
+        out_data[OUT_RAINF].data[0] = ((out_data[OUT_AIR_TEMP].data[0]-global_param.MIN_RAIN_TEMP)/(global_param.MAX_SNOW_TEMP-global_param.MIN_RAIN_TEMP))*out_data[OUT_PREC].data[0];
+        out_data[OUT_SNOWF].data[0] = out_data[OUT_PREC].data[0]-out_data[OUT_RAINF].data[0];
+      }
+
+      for (v=0; v<N_OUTVAR_TYPES; v++) {
+        for (i=0; i<out_data[v].nelem; i++) {
+          out_data[v].aggdata[i] = out_data[v].data[i];
+        }
+      }
+
+      if (options.ALMA_OUTPUT) {
+        out_data[OUT_PREC].aggdata[0] /= dt_sec;
+        out_data[OUT_RAINF].aggdata[0] /= dt_sec;
+        out_data[OUT_SNOWF].aggdata[0] /= dt_sec;
+        out_data[OUT_AIR_TEMP].aggdata[0] += KELVIN;
+        out_data[OUT_PRESSURE].aggdata[0] *= 1000;
+        out_data[OUT_VP].aggdata[0] *= 1000;
+        out_data[OUT_VPD].aggdata[0] *= 1000;
+      }
+
+    }
+    ////////////////
+    for (int var_idx = 0; var_idx < out_data_files[0].nvars; var_idx++) {
+      // Loop over this variable's elements
+      for (int elem_idx = 0; elem_idx < out_data[out_data_files[0].varid[var_idx]].nelem; elem_idx++) {
+        out_dataAllRecs[var_idx][rec] = out_data[out_data_files[0].varid[var_idx]].aggdata[elem_idx];
+      }
+    }
+  }
+
+  List out_dataR;
+  // for (int var_idx = 0; var_idx < 1; var_idx++) {
+  for (int var_idx = 0; var_idx < out_data_files[0].nvars; var_idx++) {
+    // Loop over this variable's elements
+    NumericVector outVectorR(global_param.nrecs);
+    for (int elem_idx = 0; elem_idx < out_data[out_data_files[0].varid[var_idx]].nelem; elem_idx++) {
+      for ( rec = 0; rec < global_param.nrecs; rec++ ) {
+        outVectorR[rec] = out_dataAllRecs[var_idx][rec];
+      }
+    }
+    // printf("%f ",  outVectorR[0]);
+    out_dataR[out_data[out_data_files[0].varid[var_idx]].varname] = outVectorR;
+  }
+
+  outListR["forcing_data"] = forcing_dataR;
+  outListR["out_data"] = out_dataR;
+
+  // free(out_dataAllRecs)
+  return outListR;
 }
 
+// extern "C" {
+//   void testWFR() {
+//     testWF();
+//   }
+// }
+//
 

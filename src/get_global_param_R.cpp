@@ -5,7 +5,7 @@
 
 static char vcid[] = "$Id$";
 
-global_param_struct get_global_param_dummy() {
+global_param_struct get_global_param_R(Rcpp::List list) {
   extern option_struct options;
   extern param_set_struct param_set;
   extern int NF, NR;
@@ -53,16 +53,17 @@ global_param_struct get_global_param_dummy() {
 
   options.Nlayer = 3;
   options.Nnode = 3; // NODES
-  global.dt = 3; // TIME_STEP
-  options.SNOW_STEP = 3;
-  global.startyear = 1965;
-  global.startmonth = 01;
-  global.startday = 01;
+
+  global.dt = (int)list["dt"];
+  options.SNOW_STEP = (int)list["SNOW_STEP"];
+  global.startyear = (int)list["startyear"];
+  global.startmonth = (int)list["startmonth"];
+  global.startday = (int)list["startday"];
   global.starthour = 00;
-  // global.nrecs = 1000;
-  global.endyear = 1968;
-  global.endmonth = 12;
-  global.endday = 31;
+  // printf("settingsss %d\n", (int)list["nrecs"]);
+  global.endyear = (int)list["endyear"];
+  global.endmonth = (int)list["endmonth"];
+  global.endday = (int)list["endday"];
   options.FULL_ENERGY = TRUE;
   options.FROZEN_SOIL = FALSE;
   options.QUICK_FLUX = TRUE;

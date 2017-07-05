@@ -1,5 +1,7 @@
 #include <math.h>
 #include "vicNl_def.h"
+#include "Rcpp.h"        // R memory io
+#include "Rdefines.h"        // R memory io
 
 /*** SubRoutine Prototypes ***/
 
@@ -125,6 +127,7 @@ void   get_force_type(char *, int, int *);
 void   get_force_type_dummy(int, int *);
 global_param_struct get_global_param(filenames_struct *, FILE *);
 global_param_struct get_global_param_dummy();
+global_param_struct get_global_param_R(Rcpp::List list);
 void   get_next_time_step(int *, int *, int *, int *, int *, int);
 
 double hermint(double, int, double *, double *, double *, double *, double *);

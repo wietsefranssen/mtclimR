@@ -6,29 +6,29 @@ static char vcid[] = "$Id$";
 
 #if OUTPUT_FORCE
 void write_forcing_toScreen(atmos_data_struct *atmos,
-			int                nrecs,
-			out_data_file_struct *out_data_files, 
-			out_data_struct   *out_data)
-/**********************************************************************
-  write_forcing_file          Keith Cherkauer           July 19, 2000
+                            int                nrecs,
+                            out_data_file_struct *out_data_files,
+                            out_data_struct   *out_data)
+  /**********************************************************************
+   write_forcing_file          Keith Cherkauer           July 19, 2000
 
-  This routine writes the complete forcing data files for use in 
-  future simulations.
+   This routine writes the complete forcing data files for use in
+   future simulations.
 
-  Modifications:
-  xx-xx-01 Modified to output pressures, which are handled internally
-           in kPa, as Pa for backward compatability.			KAC
-  2005-Mar-24 Added support for ALMA variables.				TJB
-  2006-08-23 Changed order of fread/fwrite statements from ...1, sizeof...
-             to ...sizeof, 1,...					GCT
-  2006-Sep-23 Implemented flexible output configuration; uses the new
-              out_data and out_data_files structures.			TJB
-  2006-Nov-30 Convert pressure and vapor pressure to kPa for output.	TJB
-  2008-Jun-10 Fixed typo in QAIR and REL_HUMID eqns.			TJB
-  2009-Feb-22 Added OUT_VPD.						TJB
-  2011-Nov-04 Added OUT_TSKC.						TJB
+   Modifications:
+   xx-xx-01 Modified to output pressures, which are handled internally
+   in kPa, as Pa for backward compatability.			KAC
+   2005-Mar-24 Added support for ALMA variables.				TJB
+   2006-08-23 Changed order of fread/fwrite statements from ...1, sizeof...
+   to ...sizeof, 1,...					GCT
+   2006-Sep-23 Implemented flexible output configuration; uses the new
+   out_data and out_data_files structures.			TJB
+   2006-Nov-30 Convert pressure and vapor pressure to kPa for output.	TJB
+   2008-Jun-10 Fixed typo in QAIR and REL_HUMID eqns.			TJB
+   2009-Feb-22 Added OUT_VPD.						TJB
+   2011-Nov-04 Added OUT_TSKC.						TJB
 
-**********************************************************************/
+   **********************************************************************/
 {
   extern global_param_struct global_param;
   extern option_struct options;
@@ -85,9 +85,9 @@ void write_forcing_toScreen(atmos_data_struct *atmos,
         out_data[OUT_VP].aggdata[0] *= 1000;
         out_data[OUT_VPD].aggdata[0] *= 1000;
       }
-  if ( rec  < 5 ) {
-      write_data_toScreen(out_data_files, out_data, dummy_dmy, dummy_dt);
-  }
+      if ( rec  < 5 ) {
+        write_data_toScreen(out_data_files, out_data, dummy_dmy, dummy_dt);
+      }
     }
   }
 

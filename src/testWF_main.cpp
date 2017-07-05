@@ -15,22 +15,7 @@ int NF; /* array index loop counter limit for atmos struct that indicates the SN
 using namespace Rcpp;
 // [[Rcpp::export]]
 List mtclimRun(List forcing_dataR, List settings) {
-  // printf("dddd: %f\n", forcing[0]);
-  // printf("dddd: %f\n", forcing[1]);
-  // printf("dddd: %f\n", forcing[(24*11688)-1]);
-  // Rcpp::List xlist(forcing_dataR);
-  // int n = forcing_dataR.size();
-  // float iii;
-  // NumericVector resid = as<NumericVector>(forcing_dataR[1]);
-  // for(int i=0;i<11688;i++) {
-  //   iii = resid[1];
-  // }
-  // float resid2 = as<float>(forcing_dataR[1]);
 
-  // printf("forcing_dataR: %f\n", resid[2]);
-  // printf("forcing_dataR: %f\n", iii);
-  // printf("forcing_dataR: %f\n", res[0][0]);
-  // printf("forcing_dataR: %f\n", forcing_dataR[1]);
   extern option_struct options;
   extern global_param_struct global_param;
 
@@ -47,7 +32,6 @@ List mtclimRun(List forcing_dataR, List settings) {
   initialize_global();
 
   /** Read Global Control File **/
-  // global_param = get_global_param_dummy();
   global_param = get_global_param_R(settings);
 
   // global_param.nrecs = nrecs;
@@ -118,12 +102,9 @@ List mtclimRun(List forcing_dataR, List settings) {
   /**************************************************
    Output to R
    **************************************************/
-  List outListR;
-
-
-  NumericVector resid=forcing_dataR[2];
-  resid[3]=9999;
-  forcing_dataR[2]=resid;
+  // NumericVector resid=forcing_dataR[2];
+  // resid[3]=9999;
+  // forcing_dataR[2]=resid;
 
   int                 rec, i, j, v;
   int                 dummy_dt;
@@ -204,6 +185,8 @@ List mtclimRun(List forcing_dataR, List settings) {
     // printf("%f ",  outVectorR[0]);
     out_dataR[out_data[out_data_files[0].varid[var_idx]].varname] = outVectorR;
   }
+
+  List outListR;
 
   outListR["forcing_data"] = forcing_dataR;
   outListR["out_data"] = out_dataR;

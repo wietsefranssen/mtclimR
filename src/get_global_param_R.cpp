@@ -42,38 +42,21 @@ global_param_struct get_global_param_R(Rcpp::List list) {
   global.stateday = MISS;
   global.out_dt = MISS;
 
+  /** Find parameters **/
   int nForcing;
   int forcId;
   nForcing = (int)list["nForcing"];
   Rcpp::NumericVector forcingIds =list["forcingIds"];
-  // for(int i=0;i<nForcing;i++) {
-  //   // printf("forcIds: %d\n", (int)forcingIds[i]);
-  //   printf("forcIds: %d\n", forcId);
-  //   forcId = (int)forcingIds[i];
-  //   get_force_type_dummy(forcId, &field);
-  // }
-  // // printf("nforcIds: %d\n", nForcing);
-
   for(int i=0;i<nForcing;i++) {
     forcId = (int)forcingIds[i];
-    // printf("forcIds: %d\n", forcId);
-      get_force_type_dummy(forcId, &field);
+    get_force_type_dummy(forcId, &field);
   }
-  // printf("nforcIds: %d\n", nForcing);
-
-  /** Find parameters **/
-  // get_force_type_dummy(PREC, &field);
-  // get_force_type_dummy(TMIN, &field);
-  // get_force_type_dummy(TMAX, &field);
-  // get_force_type_dummy(WIND, &field);
-  // get_force_type_dummy(SHORTWAVE, &field);
-  // get_force_type_dummy(LONGWAVE, &field);
 
   options.Nlayer = 3;
   options.Nnode = 3; // NODES
 
-  global.dt = (int)list["dt"];
-  options.SNOW_STEP = (int)list["SNOW_STEP"];
+  global.dt = (int)list["outstep"];
+  options.SNOW_STEP = (int)list["outstep"];
   global.startyear = (int)list["startyear"];
   global.startmonth = (int)list["startmonth"];
   global.startday = (int)list["startday"];
@@ -98,10 +81,10 @@ global_param_struct get_global_param_R(Rcpp::List list) {
 
   /////////////////
   param_set.FORCE_DT = 24;
-  global.forceyear = 1960;
-  global.forcemonth = 01;
-  global.forceday = 01;
-  global.forcehour = 00;
+  global.forceyear = global.startyear;
+  global.forcemonth = global.startmonth;
+  global.forceday = global.startday;
+  global.forcehour = global.starthour;
   /////////////////
 
   global.wind_h = 10;
@@ -113,7 +96,7 @@ global_param_struct get_global_param_R(Rcpp::List list) {
   /*************************************
    Define output files
    *************************************/
-  global.out_dt; //# Output interval (hours); if 0, OUT_STEP = TIME_STEP
+  global.out_dt = (int)list["outstep"]; //# Output interval (hours); if 0, OUT_STEP = TIME_STEP
   global.skipyear = 0;
   options.COMPRESS = FALSE;
   options.BINARY_OUTPUT = FALSE;

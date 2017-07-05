@@ -14,7 +14,7 @@ int NF; /* array index loop counter limit for atmos struct that indicates the SN
 #include <Rcpp.h>
 using namespace Rcpp;
 // [[Rcpp::export]]
-List mtclimRun(int nrecs, List forcing_dataR, List settings) {
+List mtclimRun(List forcing_dataR, List settings) {
   // printf("dddd: %f\n", forcing[0]);
   // printf("dddd: %f\n", forcing[1]);
   // printf("dddd: %f\n", forcing[(24*11688)-1]);

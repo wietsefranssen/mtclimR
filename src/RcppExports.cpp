@@ -6,15 +6,14 @@
 using namespace Rcpp;
 
 // mtclimRun
-List mtclimRun(int nrecs, List forcing_dataR, List settings);
-RcppExport SEXP mtclimR_mtclimRun(SEXP nrecsSEXP, SEXP forcing_dataRSEXP, SEXP settingsSEXP) {
+List mtclimRun(List forcing_dataR, List settings);
+RcppExport SEXP mtclimR_mtclimRun(SEXP forcing_dataRSEXP, SEXP settingsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type nrecs(nrecsSEXP);
     Rcpp::traits::input_parameter< List >::type forcing_dataR(forcing_dataRSEXP);
     Rcpp::traits::input_parameter< List >::type settings(settingsSEXP);
-    rcpp_result_gen = Rcpp::wrap(mtclimRun(nrecs, forcing_dataR, settings));
+    rcpp_result_gen = Rcpp::wrap(mtclimRun(forcing_dataR, settings));
     return rcpp_result_gen;
 END_RCPP
 }

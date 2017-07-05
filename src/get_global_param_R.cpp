@@ -42,14 +42,32 @@ global_param_struct get_global_param_R(Rcpp::List list) {
   global.stateday = MISS;
   global.out_dt = MISS;
 
+  int nForcing;
+  int forcId;
+  nForcing = (int)list["nForcing"];
+  Rcpp::NumericVector forcingIds =list["forcingIds"];
+  // for(int i=0;i<nForcing;i++) {
+  //   // printf("forcIds: %d\n", (int)forcingIds[i]);
+  //   printf("forcIds: %d\n", forcId);
+  //   forcId = (int)forcingIds[i];
+  //   get_force_type_dummy(forcId, &field);
+  // }
+  // // printf("nforcIds: %d\n", nForcing);
+
+  for(int i=0;i<nForcing;i++) {
+    forcId = (int)forcingIds[i];
+    // printf("forcIds: %d\n", forcId);
+      get_force_type_dummy(forcId, &field);
+  }
+  // printf("nforcIds: %d\n", nForcing);
 
   /** Find parameters **/
-  get_force_type_dummy(PREC, &field);
-  get_force_type_dummy(TMIN, &field);
-  get_force_type_dummy(TMAX, &field);
-  get_force_type_dummy(WIND, &field);
-  get_force_type_dummy(SHORTWAVE, &field);
-  get_force_type_dummy(LONGWAVE, &field);
+  // get_force_type_dummy(PREC, &field);
+  // get_force_type_dummy(TMIN, &field);
+  // get_force_type_dummy(TMAX, &field);
+  // get_force_type_dummy(WIND, &field);
+  // get_force_type_dummy(SHORTWAVE, &field);
+  // get_force_type_dummy(LONGWAVE, &field);
 
   options.Nlayer = 3;
   options.Nnode = 3; // NODES
@@ -60,7 +78,6 @@ global_param_struct get_global_param_R(Rcpp::List list) {
   global.startmonth = (int)list["startmonth"];
   global.startday = (int)list["startday"];
   global.starthour = 00;
-  // printf("settingsss %d\n", (int)list["nrecs"]);
   global.endyear = (int)list["endyear"];
   global.endmonth = (int)list["endmonth"];
   global.endday = (int)list["endday"];

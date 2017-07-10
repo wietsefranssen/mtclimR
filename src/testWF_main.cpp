@@ -54,9 +54,13 @@ List mtclimRun(List forcing_dataR, List settings) {
   cell_cnt = 0;
 
   soil_con.time_zone_lng = -30;
-  soil_con.lng = -39.25;
-  soil_con.lat = -8.25;
-  soil_con.elevation = 434;
+  // soil_con.lng = -39.25;
+  // soil_con.lat = -8.25;
+  // soil_con.elevation = 434;
+  soil_con.lng = (double)settings["lon"];
+  soil_con.lat = (double)settings["lat"];
+  soil_con.elevation = (double)settings["elevation"];
+  // printf("elevation: %f %f %f\n", soil_con.elevation, soil_con.lng, soil_con.lat);
   soil_con.slope = 0;
   soil_con.aspect = 0;
   soil_con.ehoriz = 0;
@@ -72,7 +76,7 @@ List mtclimRun(List forcing_dataR, List settings) {
   double **forcing_data;
   /** Allocate data arrays for input forcing data **/
   forcing_data = (double **)calloc(N_FORCING_TYPES,sizeof(double*));
-  printf("N_FORCING_TYPES: %d %d %d\n", N_FORCING_TYPES, global_param.nrecs, NF);
+  // printf("N_FORCING_TYPES: %d %d %d\n", N_FORCING_TYPES, global_param.nrecs, NF);
   for(int i=0;i<N_FORCING_TYPES;i++) {
     if (param_set.TYPE[i].SUPPLIED) {
       forcing_data[i] = (double *)calloc((global_param.nrecs * NF),

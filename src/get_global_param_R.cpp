@@ -90,7 +90,7 @@ global_param_struct get_global_param_R(Rcpp::List list) {
   global.wind_h = 10;
   global.measure_h = 2.0;
 
-  options.ALMA_INPUT = FALSE;
+  options.ALMA_INPUT = (int)list["alma_input"];
   options.LAI_SRC = LAI_FROM_VEGPARAM;
 
   /*************************************

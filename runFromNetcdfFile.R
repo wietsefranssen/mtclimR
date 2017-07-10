@@ -1,5 +1,5 @@
 rm (list = ls())
-# library(ncdf4) // DEPENDCY DEFINE!!
+library(ncdf4) # DEPENDCY DEFINE!!
 
 variableInfo <- list(
   pr         = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "prAdjust",        vicIndex = 9),

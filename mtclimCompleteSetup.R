@@ -1,5 +1,5 @@
 rm (list = ls())
-# library(WFRTools)
+library(WFRTools)
 library(doParallel)
 # library(pbdNCDF4)
 library(ncdf4)
@@ -59,13 +59,8 @@ settings$outputVars <- list(
   makeNetcdfOut(settings, elevation)
 
   ## DIVIDE DOMAIN IN PARTS (NOT TO SMALL AND NOT TOO BIG(SPEED vs MEMORY))
-  settings$parts<- setSubDomains(settings, elevation, partSize = NULL)
-  # settings$parts<- setSubDomains(settings, elevation, partSize = 20)
-
-  ncids<-NULL
-  for (iVar in 1:length(settings$inputVars)) {
-    ncids[[iVar]] <- nc_open(file = settings$inputVars[[iVar]]$ncFileName)
-  }
+  # settings$parts<- setSubDomains(settings, elevation, partSize = NULL)
+  settings$parts<- setSubDomains(settings, elevation, partSize = 20)
 
   ## SUBDOMAIN LOOP / MPI LOOP
   # foreach(iPart = 1:length(settings$parts)) %dopar% {
@@ -81,7 +76,7 @@ settings$outputVars <- list(
     toNetCDFData <- list(el)[rep(1,length(settings$outputVars))]
 
     ## LOAD SUBDOMAIN FROM NETCDF
-    forcing_dataRTotal <- readForcing(settings, iPart, ncids)
+    forcing_dataRTotal <- readForcing(settings, iPart)
 
     ## CELL LOOP
     for (iy in 1:settings$parts[[iPart]]$ny) {
@@ -127,10 +122,6 @@ settings$outputVars <- list(
     nc_close(ncid)
 
   }
-  for (iVar in 1:length(settings$inputVars)) {
-    ncids[[iVar]] <- nc_close(ncids[[iVar]])
-  }
-
 }
 end.time <- Sys.time()
 time.taken <- end.time - start.time1

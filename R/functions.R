@@ -93,7 +93,7 @@ makeNetcdfOut <- function(settings, mask) {
 
   ## SAVE AS NC-DATA
   print(paste0("Writing: ", settings$outfile))
-  ncid <- nc_create(settings$outfile, dataAllVars)
+  ncid <- nc_create(settings$outfile, dataAllVars,force_v4=TRUE)
 
   ncatt_put( ncid, "lon", "standard_name", "longitude")
   ncatt_put( ncid, "lon", "long_name",     "Longitude")

@@ -62,7 +62,6 @@ void vicmain(double **forcing_data){
    read in meteorological data
    *******************************/
   // double **forcing_data;
-  // double **forcing_data;
   /** Allocate data arrays for input forcing data **/
   forcing_data = (double **)calloc(N_FORCING_TYPES,sizeof(double*));
   printf("N_FORCING_TYPES: %d %d %d\n", N_FORCING_TYPES, global_param.nrecs, NF);

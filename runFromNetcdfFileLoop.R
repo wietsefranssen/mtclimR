@@ -3,6 +3,7 @@ library(ncdf4) # DEPENDCY DEFINE!!
 library(foreach) # DEPENDCY DEFINE!!
 library(doMC)
 registerDoMC(2)  #change the 2 to your number of CPU cores
+start.time <- Sys.time()
 
 variableInfo <- list(
   pr         = list(ncFileName = "/home/wietse/Documents/Projects/VIC_model/MetSim/dataWietse/pr_bced_1960_1999_gfdl-esm2m_hist_1950.nc",        ncName = "prAdjust",        alma = TRUE, vicIndex = 9),
@@ -65,12 +66,12 @@ print("run!")
 # ny<-10
 forcing_dataR<-NULL
 
-nOutVars <- 13
+nOutVars <- 6
 
 outArrayDefined <- FALSE
 # foreach(iy = 1:ny) %dopar% {
 for (iy in 1:params$intern$ny) {
-  print(paste0("iy: ", iy, "/", params$intern$ny))
+  # print(paste0("iy: ", iy, "/", params$intern$ny))
   for (ix in 1:params$intern$nx) {
     # print(paste(iy,ix))
     # if (!is.na(forcing_dataRTotal[[1]][ix,iy,1])) {

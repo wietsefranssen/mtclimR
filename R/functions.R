@@ -83,12 +83,13 @@ makeNetcdfOut <- function(settings, mask) {
   timeArray <-c(0:(settings$intern$nrec_out-1)) * (24 / (24/settings$outstep))
   dimT <- ncdim_def("time", paste0("hours since ",timeString), timeArray, unlim = FALSE)
 
-  # ################
-  data <- ncvar_def(name=names(settings$outputVars[1]), units='', dim=list(dimT,dimY,dimX), missval=FillValue, prec="float")
+  ################
+  # data <- ncvar_def(name=names(settings$outputVars[1]), units='', dim=list(dimT,dimY,dimX), missval=FillValue, prec="float")
+  data <- ncvar_def(name=names(settings$outputVars[1]), units='', dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
   dataAllVars <- list(data)[rep(1,length(settings$outputVars))]
   for (iVar in 1:length(settings$outputVars))
   {
-    dataAllVars[[iVar]] <- ncvar_def(name=names(settings$outputVars[iVar]), units='', dim=list(dimT,dimY,dimX), missval=FillValue, prec="float")
+    dataAllVars[[iVar]] <- ncvar_def(name=names(settings$outputVars[iVar]), units='', dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
   }
 
   ## SAVE AS NC-DATA

@@ -1,6 +1,8 @@
 rm (list = ls())
-library(WFRTools)
+# library(WFRTools)
 library(doParallel)
+# library(pbdNCDF4)
+library(ncdf4)
 registerDoParallel(cores=2)
 
 start.time1 <- Sys.time()
@@ -14,7 +16,7 @@ settings <- initSettings(startdate = "1950-01-01",
 settings <- initSettings(startdate = "1950-01-01",
                          enddate = "1950-12-31",
                          outstep = 6,
-                         lonlatbox = c(100.75, 110.25, 32.25, 36.25))
+                         lonlatbox = c(100.75, 102.25, 32.25, 36.25))
 
 settings <- setInputVars(settings,list(
   pr         = list(ncFileName = "/home/wietse/Documents/Projects/VIC_model/MetSim/dataWietse/pr_bced_1960_1999_gfdl-esm2m_hist_1950.nc",        ncName = "prAdjust",        alma = TRUE, vicIndex = 9),
@@ -60,6 +62,11 @@ settings$outputVars <- list(
   settings$parts<- setSubDomains(settings, elevation, partSize = NULL)
   # settings$parts<- setSubDomains(settings, elevation, partSize = 20)
 
+  ncids<-NULL
+  for (iVar in 1:length(settings$inputVars)) {
+    ncids[[iVar]] <- nc_open(file = settings$inputVars[[iVar]]$ncFileName)
+  }
+
   ## SUBDOMAIN LOOP / MPI LOOP
   # foreach(iPart = 1:length(settings$parts)) %dopar% {
   for (iPart in 1:length(settings$parts)) {
@@ -74,7 +81,7 @@ settings$outputVars <- list(
     toNetCDFData <- list(el)[rep(1,length(settings$outputVars))]
 
     ## LOAD SUBDOMAIN FROM NETCDF
-    forcing_dataRTotal <- readForcing(settings, iPart)
+    forcing_dataRTotal <- readForcing(settings, iPart, ncids)
 
     ## CELL LOOP
     for (iy in 1:settings$parts[[iPart]]$ny) {
@@ -94,7 +101,6 @@ settings$outputVars <- list(
           output <- mtclimRun(forcing_dataR = forcing_dataR, settings = settings$mtclim)
 
           ## ADD TO OUTPUT ARRAY
-          # for (iVar in 1:length(settings$outputVars)) toNetCDFData[[iVar]][,iy,ix] <- output$out_data[[iVar]]
           for (iVar in 1:length(settings$outputVars)) toNetCDFData[[iVar]][ix,iy,] <- output$out_data[[iVar]]
         }
       }
@@ -116,17 +122,15 @@ settings$outputVars <- list(
                 count = c(settings$parts[[iPart]]$nx,
                           settings$parts[[iPart]]$ny,
                           settings$intern$nrec_out)
-                # start = c(1,
-                #           settings$parts[[iPart]]$sy,
-                #           settings$parts[[iPart]]$sx),
-                # count = c(settings$intern$nrec_out,
-                #           settings$parts[[iPart]]$ny,
-                #           settings$parts[[iPart]]$nx)
       )
     }
     nc_close(ncid)
 
   }
+  for (iVar in 1:length(settings$inputVars)) {
+    ncids[[iVar]] <- nc_close(ncids[[iVar]])
+  }
+
 }
 end.time <- Sys.time()
 time.taken <- end.time - start.time1

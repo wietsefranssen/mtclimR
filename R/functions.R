@@ -1,3 +1,4 @@
+#library(pbdNCDF4)
 library(ncdf4)
 
 initSettings <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatbox = NULL, outfile = "output.nc") {
@@ -84,7 +85,6 @@ makeNetcdfOut <- function(settings, mask) {
   dimT <- ncdim_def("time", paste0("hours since ",timeString), timeArray, unlim = FALSE)
 
   ################
-  # data <- ncvar_def(name=names(settings$outputVars[1]), units='', dim=list(dimT,dimY,dimX), missval=FillValue, prec="float")
   data <- ncvar_def(name=names(settings$outputVars[1]), units='', dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
   dataAllVars <- list(data)[rep(1,length(settings$outputVars))]
   for (iVar in 1:length(settings$outputVars))
@@ -94,6 +94,7 @@ makeNetcdfOut <- function(settings, mask) {
 
   ## SAVE AS NC-DATA
   print(paste0("Writing: ", settings$outfile))
+  # ncid <- nc_create_par(settings$outfile, dataAllVars,force_v4=TRUE)
   ncid <- nc_create(settings$outfile, dataAllVars,force_v4=TRUE)
 
   ncatt_put( ncid, "lon", "standard_name", "longitude")
@@ -178,7 +179,7 @@ setSubDomains <- function(settings, mask, partSize = NULL) {
 
   return(parts)
 }
-readForcing <- function(settings, iPart) {
+readForcing <- function(settings, iPart, ncids) {
   forcing_dataR <- list()
   for (i in 1:length(settings$inputVars)) {
     forcing_dataR[[i]]<- array(0, dim=c(settings$intern$nrec_in,settings$parts[[iPart]]$ny,settings$parts[[iPart]]$nx))
@@ -195,7 +196,8 @@ readForcing <- function(settings, iPart) {
                                                     settings$parts[[iPart]]$elon,
                                                     settings$parts[[iPart]]$slat,
                                                     settings$parts[[iPart]]$elat),
-                                      timesteps = c(1:settings$intern$nrec_in))$Data
+                                      timesteps = c(1:settings$intern$nrec_in),
+                                      ncid = ncids[[iVar]])$Data
   }
   return(forcing_dataR)
 }

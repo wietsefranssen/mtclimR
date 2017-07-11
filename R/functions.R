@@ -177,7 +177,7 @@ setSubDomains <- function(settings, mask, partSize = NULL) {
 
   return(parts)
 }
-readForcing <- function(settings) {
+readForcing <- function(settings, iPart) {
   forcing_dataR <- list()
   for (i in 1:length(settings$inputVars)) {
     forcing_dataR[[i]]<- array(0, dim=c(settings$intern$nrec_in,settings$parts[[iPart]]$ny,settings$parts[[iPart]]$nx))
@@ -194,7 +194,7 @@ readForcing <- function(settings) {
                                                     settings$parts[[iPart]]$elon,
                                                     settings$parts[[iPart]]$slat,
                                                     settings$parts[[iPart]]$elat),
-                                      timesteps = c(1:365))$Data
+                                      timesteps = c(1:settings$intern$nrec_in))$Data
   }
   return(forcing_dataR)
 }

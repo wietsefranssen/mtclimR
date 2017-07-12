@@ -151,6 +151,7 @@ setSubDomains <- function(settings, mask, partSize = NULL) {
     parts[[iPart]]$elat <- mask$xyCoords$y[iPart * (partSize/length(mask$xyCoords$x))]
   }
   parts[[nPart]]$elat <- mask$xyCoords$y[length(mask$xyCoords$y)]
+  parts[[nPart]]$ny <- (length(mask$xyCoords$y) - parts[[nPart]]$sy) + 1
 
   return(parts)
 }

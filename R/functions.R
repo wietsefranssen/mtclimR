@@ -119,63 +119,38 @@ setSubDomains <- function(settings, mask, partSize = NULL) {
   # partSize <- 50
   # partBased <- "lon"
   # partSize <-NULL
-  # mask<-elevation
-  if (is.null(partSize)) {
-    print(paste0("Partsize not defined, so using max: ", length(mask$Data[!is.na(mask$Data)]), " (only 1 part)"))
-    partSize <- length(mask$Data[!is.na(mask$Data)])
-  } else if (partSize < length(mask$xyCoords$y)) {
-    print(paste0("Partsize (", partSize, ") should be higher than ny (", length(mask$xyCoords$y), ")"))
-    print(paste0("Partsize changed to ny (", length(mask$xyCoords$y), ")"))
-    partSize <- length(mask$xyCoords$y)
+  nCells<-length(mask$xyCoords$x)*length(mask$xyCoords$y)
 
+  if (is.null(partSize)) {
+    print(paste0("Partsize not defined, so using max: ", nCells, " (only 1 part)"))
+    partSize <- nCells
+  }
+  partSizeOld <- partSize
+  partSize <- ceiling(partSize/length(mask$xyCoords$x)) * length(mask$xyCoords$x)
+  if (partSizeOld != partSize) {
+    print(paste0("partsize should be a multiplication of nx(", length(mask$xyCoords$x),"), so changed to: ", partSize))
   }
 
   nActive <- length(mask$Data[!is.na(mask$Data)])
-  print(paste0(nActive, " active cells in mask found"))
-  nPart <- ceiling(nActive / partSize)
-  print(paste0(nPart, " parts (partsize: ", partSize, ")"))
+  nPart<-ceiling(nCells/partSize)
+  print(paste0("Total cells: ", nCells, ", Active Cells: ", nActive, ", nParts: ", nPart))
 
   part <- list(sx = 1,
                nx = length(mask$xyCoords$x),
                sy = NULL,
-               ny = NULL,
-               slon = NULL,
-               elon = NULL,
+               ny = partSize/length(mask$xyCoords$x),
+               slon = min(mask$xyCoords$x),
+               elon = max(mask$xyCoords$x),
                slat = NULL,
                elat = NULL)
   parts <- list(part)[rep(1,nPart)]
 
-  parts[[1]]$sy <- 1
-  if(nPart > 1) {
-    counter <- 1
-    iPart <- 1
-    for (iy in 1:length(mask$xyCoords$y)) {
-      for (ix in 1:length(mask$xyCoords$x)) {
-        if (!is.na(mask$Data[iy,ix])) {
-          # print(counter)
-          counter <- counter + 1
-        }
-        if (counter >= partSize) {
-          iPart <- iPart + 1
-          parts[[iPart]]$sy <- iy
-          counter <- 1
-        }
-      }
-    }
-
-    for (iPart in 1:(nPart - 1)) {
-      parts[[iPart]]$ny <- parts[[iPart + 1]]$sy - parts[[iPart]]$sy
-      parts[[iPart]]$slon <- mask$xyCoords$x[parts[[iPart]]$sx]
-      parts[[iPart]]$elon <- mask$xyCoords$x[parts[[iPart]]$sx + parts[[iPart]]$nx -1]
-      parts[[iPart]]$slat <- mask$xyCoords$y[parts[[iPart]]$sy]
-      parts[[iPart]]$elat <- mask$xyCoords$y[parts[[iPart]]$sy + parts[[iPart]]$ny -1]
-    }
+  for (iPart in 1:(nPart)) {
+    parts[[iPart]]$sy <- (iPart -1) * (partSize/length(mask$xyCoords$x)) +1
+    parts[[iPart]]$slat <- mask$xyCoords$y[parts[[iPart]]$sy]
+    parts[[iPart]]$elat <- mask$xyCoords$y[iPart * (partSize/length(mask$xyCoords$x))]
   }
-  parts[[nPart]]$ny <- length(mask$xyCoords$y) - parts[[nPart]]$sy + 1
-  parts[[nPart]]$slon <- mask$xyCoords$x[parts[[nPart]]$sx]
-  parts[[nPart]]$elon <- mask$xyCoords$x[parts[[nPart]]$sx + parts[[nPart]]$nx -1]
-  parts[[nPart]]$slat <- mask$xyCoords$y[parts[[nPart]]$sy]
-  parts[[nPart]]$elat <- mask$xyCoords$y[parts[[nPart]]$sy + parts[[nPart]]$ny -1]
+  parts[[nPart]]$elat <- mask$xyCoords$y[length(mask$xyCoords$y)]
 
   return(parts)
 }

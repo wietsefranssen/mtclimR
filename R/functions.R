@@ -177,6 +177,25 @@ readForcing <- function(settings, iPart) {
   return(forcing_dataR)
 }
 
+readForcingAll <- function(settings, mask) {
+  # mask<-elevation
+  forcing_dataR <- list()
+  for (i in 1:length(settings$inputVars)) {
+    forcing_dataR[[i]]<- array(0, dim=c(settings$intern$nrec_in,  length(mask$xyCoords$y),  length(mask$xyCoords$x)))
+  }
+  ## Read data
+  for (iVar in 1:length(settings$inputVars)) {
+    forcing_dataR[[iVar]][] <- ncLoad(file = settings$inputVars[[iVar]]$ncFileName,
+                                      varName = settings$inputVars[[iVar]]$ncName,
+                                      lonlatbox = c(settings$lonlatbox[1],
+                                                    settings$lonlatbox[2],
+                                                    settings$lonlatbox[3],
+                                                    settings$lonlatbox[4]),
+                                      timesteps = c(1:settings$intern$nrec_in))$Data
+  }
+  return(forcing_dataR)
+}
+
 selectForcingCell <-function(settings, forcing_dataRTotal, ix, iy) {
   forcing_dataR<-NULL
 

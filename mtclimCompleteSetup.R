@@ -7,103 +7,19 @@ start.time1 <- Sys.time()
 library(doParallel)
 library(mtclimR)
 # library(pbdNCDF4)
-registerDoParallel(cores=2)
+nCores<-1
+registerDoParallel(cores=nCores)
+start.time.total <- Sys.time()
+print(paste("nCores: ", nCores))
 
 ## INIT SETTINGS
 settings <- initSettings(startdate = "1950-01-01",
                          enddate = "1950-12-31",
                          outstep = 6,
                          lonlatbox = c(100.75, 102.25, 32.25, 36.25))
-                         #lonlatbox = c(92.25, 110.25, 7.25, 36.25))
+#lonlatbox = c(92.25, 110.25, 7.25, 36.25))
 #lonlatbox = c(-179.75, 179.75, 7.25, 36.25))
 #lonlatbox = c(92.25, 110.25, 7.25, 36.25))
-setSubDomains <- function(settings, mask, partSize = NULL) {
-  mask <- elevation
-  # partSize <- 50
-  # partSize <- 59
-  # partBased <- "lon"
-  # partSize <-NULL
-  nCells<-length(mask$xyCoords$x)*length(mask$xyCoords$y)
-
-  if (is.null(partSize)) {
-    print(paste0("Partsize not defined, so using max: ", nCells, " (only 1 part)"))
-    partSize <- nCells
-  }
-  partSizeOld <- partSize
-  partSize <- ceiling(partSize/length(mask$xyCoords$y)) * length(mask$xyCoords$y)
-  if (partSizeOld != partSize) {
-    print(paste0("partsize should be a multiplication of ny(", length(mask$xyCoords$y),"), so changed to: ", partSize))
-  }
-
-  nActive <- length(mask$Data[!is.na(mask$Data)])
-  nPart<-ceiling(nCells/partSize)
-  print(paste0("Total cells: ", nCells, ", Active Cells: ", nActive, ", nParts: ", nPart))
-
-  part <- list(sx = NULL,
-               nx = partSize/length(mask$xyCoords$y),
-               sy = 1,
-               ny = length(mask$xyCoords$y),
-               slon = NULL,
-               elon = NULL,
-               slat = min(mask$xyCoords$y),
-               elat = max(mask$xyCoords$y))
-  parts <- list(part)[rep(1,nPart)]
-
-  for (iPart in 1:(nPart)) {
-    parts[[iPart]]$sx <- (iPart -1) * (partSize/length(mask$xyCoords$y)) +1
-    parts[[iPart]]$slon <- mask$xyCoords$x[parts[[iPart]]$sx]
-    parts[[iPart]]$elon <- mask$xyCoords$x[iPart * (partSize/length(mask$xyCoords$y))]
-  }
-  parts[[nPart]]$elon <- mask$xyCoords$x[length(mask$xyCoords$x)]
-  parts[[nPart]]$nx <- (length(mask$xyCoords$x) - parts[[nPart]]$sx) + 1
-
-  return(parts)
-}
-# setSubDomains <- function(settings, mask, partSize = NULL) {
-#   mask <- elevation
-#   partSize <- 50
-#   # partSize <- 59
-#   # partBased <- "lon"
-#   # partSize <-NULL
-#   nCells<-length(mask$xyCoords$x)*length(mask$xyCoords$y)
-#
-#   if (is.null(partSize)) {
-#     print(paste0("Partsize not defined, so using max: ", nCells, " (only 1 part)"))
-#     partSize <- nCells
-#   }
-#   partSizeOld <- partSize
-#   nPart<-ceiling(nCells/partSize)
-#   partSize<-ceiling(sqrt(nCells/nPart))^2
-#   nPart<-ceiling(nCells/partSize)
-#   # partSize <- ceiling(nCells/partSize)
-#   if (partSizeOld != partSize) {
-#     print(paste0("partsize should be a multiplication of ny(", length(mask$xyCoords$y),"), so changed to: ", partSize))
-#   }
-#
-#   nActive <- length(mask$Data[!is.na(mask$Data)])
-#   print(paste0("Total cells: ", nCells, ", Active Cells: ", nActive, ", nParts: ", nPart))
-#
-#   part <- list(sx = NULL,
-#                nx = partSize/length(mask$xyCoords$y),
-#                sy = 1,
-#                ny = length(mask$xyCoords$y),
-#                slon = NULL,
-#                elon = NULL,
-#                slat = min(mask$xyCoords$y),
-#                elat = max(mask$xyCoords$y))
-#   parts <- list(part)[rep(1,nPart)]
-#
-#   for (iPart in 1:(nPart)) {
-#     parts[[iPart]]$sx <- (iPart -1) * (partSize/length(mask$xyCoords$y)) +1
-#     parts[[iPart]]$slon <- mask$xyCoords$x[parts[[iPart]]$sx]
-#     parts[[iPart]]$elon <- mask$xyCoords$x[iPart * (partSize/length(mask$xyCoords$y))]
-#   }
-#   parts[[nPart]]$elon <- mask$xyCoords$x[length(mask$xyCoords$x)]
-#   parts[[nPart]]$nx <- (length(mask$xyCoords$x) - parts[[nPart]]$sx) + 1
-#
-#   return(parts)
-# }
-
 
 ## INIT INPUT FILES/VARS
 settings <- setInputVars(settings,list(
@@ -118,11 +34,11 @@ settings$elevation  <- list(ncFileName = "/home/wietse/Documents/Projects/VIC_mo
 
 ## INIT INPUT FILES/VARS
 settings <- setInputVars(settings,list(
-                           pr         = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "prAdjust",        vicIndex = 9,   alma = FALSE),
-                           tasmin     = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "tasminAdjust",    vicIndex = 17),
-                           tasmax     = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "tasmaxAdjust",    vicIndex = 16),
-                           wind       = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "windAdjust",      vicIndex = 20)
-                         ))
+  pr         = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "prAdjust",        vicIndex = 9,   alma = FALSE),
+  tasmin     = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "tasminAdjust",    vicIndex = 17),
+  tasmax     = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "tasmaxAdjust",    vicIndex = 16),
+  wind       = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "windAdjust",      vicIndex = 20)
+))
 settings$elevation <- list(ncFileName = "./data/domain_elev_Mekong.nc", ncName = "elev")
 
 ## INIT OUTPUT FILES/VARS
@@ -146,80 +62,66 @@ elevation <- ncLoad(file = settings$elevation$ncFileName,
 makeNetcdfOut(settings, elevation)
 
 ## DIVIDE DOMAIN IN PARTS (NOT TO SMALL AND NOT TOO BIG(SPEED vs MEMORY))
-settings$parts<- setSubDomains(settings, elevation, partSize = NULL)
-# settings$parts<- setSubDomains(settings, elevation, partSize = 200)
-for (iPart in 1:length(settings$parts)) {
-  print(paste("part:", iPart, settings$parts[[iPart]]$sx, settings$parts[[iPart]]$nx, settings$parts[[iPart]]$sy, settings$parts[[iPart]]$ny,
-              settings$parts[[iPart]]$slon, settings$parts[[iPart]]$elon, settings$parts[[iPart]]$slat, settings$parts[[iPart]]$elat))
-}
+#settings$parts<- setSubDomains(settings, elevation, partSize = NULL)
+#settings$parts<- setSubDomains(settings, elevation, partSize = 3)
 
 
-## SUBDOMAIN LOOP / MPI LOOP
-foreach(iPart = 1:length(settings$parts)) %dopar% {
-  # for (iPart in 1:length(settings$parts)) {
+## DEFINE OUTPUT ARRAY
+el <- array(NA, dim = c(length(elevation$xyCoords$x), length(elevation$xyCoords$y), settings$intern$nrec_out))
+toNetCDFData <- list(el)[rep(1,length(settings$outputVars))]
 
-  start.time.data <- Sys.time()
-  print(paste0("doing part: ", iPart, "/", length(settings$parts)))
+## LOAD SUBDOMAIN FROM NETCDF
+#######
+# forcing_dataRTotal <- readForcing(settings, iPart)
+forcing_dataRTotal <- readForcingAll(settings, elevation)
+#######
 
-  ## DEFINE OUTPUT ARRAY
-  el <- array(NA, dim = c(settings$parts[[iPart]]$nx, settings$parts[[iPart]]$ny,settings$intern$nrec_out))
-  toNetCDFData <- list(el)[rep(1,length(settings$outputVars))]
+## CELL LOOP
+for (iy in 1:length(elevation$xyCoords$y)) {
+  output<-foreach(ix = 1:length(elevation$xyCoords$x)) %dopar% {
+    # for (ix in 1:length(elevation$xyCoords$x)) {
+    # ix<-1
+    # iy<-1
+    print(paste(iy,ix))
+    if (!is.na(elevation$Data[iy,ix])) {
+      forcing_dataR <- selectForcingCell(settings, forcing_dataRTotal, ix, iy)
 
-  ## LOAD SUBDOMAIN FROM NETCDF
-  #######
-  forcing_dataRTotal <- readForcing(settings, iPart)
-  #######
-  end.time.data <- Sys.time()
-  time.taken <- end.time.data - start.time.data
-  print(paste("data:   ", iPart, ",  ", time.taken))
+      settings$mtclim$elevation <- elevation$Data[iy,ix]
+      settings$mtclim$lon<-elevation$xyCoords$x[ix]
+      settings$mtclim$lat<-elevation$xyCoords$y[iy]
 
-  start.time.mtclim <- Sys.time()
-  ## CELL LOOP
-  for (iy in 1:settings$parts[[iPart]]$ny) {
-    # print(paste0("iy: ", iy, "/", settings$parts[[iPart]]$ny))
-    for (ix in 1:settings$parts[[iPart]]$nx) {
-      # print(paste(iy,ix))
-      iix <-settings$parts[[iPart]]$sx+ix-1
-      iiy <-settings$parts[[iPart]]$sy+iy-1
-      if (!is.na(elevation$Data[iiy,iix])) {
-        forcing_dataR <- selectForcingCell(settings, forcing_dataRTotal, ix, iy)
-
-        settings$mtclim$elevation <- elevation$Data[iiy,iix]
-        settings$mtclim$lon<-elevation$xyCoords$x[iix]
-        settings$mtclim$lat<-elevation$xyCoords$y[iiy]
-
-        ## RUN MLTCLIM
-        output <- mtclimRun(forcing_dataR = forcing_dataR, settings = settings$mtclim)
-
-        ## ADD TO OUTPUT ARRAY
-        for (iVar in 1:length(settings$outputVars)) toNetCDFData[[iVar]][ix,iy,] <- output$out_data[[iVar]]
-      }
+      ## RUN MLTCLIM
+      output<-mtclimRun(forcing_dataR = forcing_dataR, settings = settings$mtclim)
+      output$out_data
     }
   }
-  end.time.mtclim <- Sys.time()
-  time.taken <- end.time.mtclim - start.time.mtclim
-  print(paste("mtclim: ", iPart, ",  ", time.taken)); rm(start.time.mtclim, end.time.mtclim, time.taken)
 
-  ## ADD OUTPUT TO NETCDF
-  ncid <- nc_open(settings$outfile, write = TRUE)
-  for (iVar in 1:length(settings$outputVars))
-  {
-    ncvar_put(ncid,
-              settings$outputVars[[iVar]]$ncName,
-              toNetCDFData[[iVar]],
-              start = c(settings$parts[[iPart]]$sx,
-                        settings$parts[[iPart]]$sy,
-                        1),
-              count = c(settings$parts[[iPart]]$nx,
-                        settings$parts[[iPart]]$ny,
-                        settings$intern$nrec_out)
-    )
+  for (ix in 1:length(elevation$xyCoords$x)) {
+    if (!is.na(elevation$Data[iy,ix])) {
+      ## ADD TO OUTPUT ARRAY
+      for (iVar in 1:length(settings$outputVars)) toNetCDFData[[iVar]][ix,iy,] <- output[[ix]][[iVar]]
+    }
   }
-  nc_close(ncid)
-
+  # print(paste(iy,outputt))
 }
-################
-end.time <- Sys.time()
-time.taken <- end.time - start.time1
-print(time.taken); rm(start.time1, end.time, time.taken)
+
+## ADD OUTPUT TO NETCDF
+ncid <- nc_open(settings$outfile, write = TRUE)
+for (iVar in 1:length(settings$outputVars))
+{
+  ncvar_put(ncid,
+            settings$outputVars[[iVar]]$ncName,
+            toNetCDFData[[iVar]],
+            start = c(1,
+                      1,
+                      1),
+            count = c(length(elevation$xyCoords$x),
+                      length(elevation$xyCoords$y),
+                      settings$intern$nrec_out)
+  )
+}
+nc_close(ncid)
+
+print(paste("total: ", as.numeric(Sys.time() - start.time.total), units = "mins"))
+
 

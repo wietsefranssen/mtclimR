@@ -13,9 +13,97 @@ registerDoParallel(cores=2)
 settings <- initSettings(startdate = "1950-01-01",
                          enddate = "1950-12-31",
                          outstep = 6,
-                         lonlatbox = c(-179.75, 179.75, 7.25, 36.25))
-#                          lonlatbox = c(100.75, 102.25, 32.25, 36.25))
+                         lonlatbox = c(100.75, 102.25, 32.25, 36.25))
+                         #lonlatbox = c(92.25, 110.25, 7.25, 36.25))
+#lonlatbox = c(-179.75, 179.75, 7.25, 36.25))
 #lonlatbox = c(92.25, 110.25, 7.25, 36.25))
+setSubDomains <- function(settings, mask, partSize = NULL) {
+  mask <- elevation
+  # partSize <- 50
+  # partSize <- 59
+  # partBased <- "lon"
+  # partSize <-NULL
+  nCells<-length(mask$xyCoords$x)*length(mask$xyCoords$y)
+
+  if (is.null(partSize)) {
+    print(paste0("Partsize not defined, so using max: ", nCells, " (only 1 part)"))
+    partSize <- nCells
+  }
+  partSizeOld <- partSize
+  partSize <- ceiling(partSize/length(mask$xyCoords$y)) * length(mask$xyCoords$y)
+  if (partSizeOld != partSize) {
+    print(paste0("partsize should be a multiplication of ny(", length(mask$xyCoords$y),"), so changed to: ", partSize))
+  }
+
+  nActive <- length(mask$Data[!is.na(mask$Data)])
+  nPart<-ceiling(nCells/partSize)
+  print(paste0("Total cells: ", nCells, ", Active Cells: ", nActive, ", nParts: ", nPart))
+
+  part <- list(sx = NULL,
+               nx = partSize/length(mask$xyCoords$y),
+               sy = 1,
+               ny = length(mask$xyCoords$y),
+               slon = NULL,
+               elon = NULL,
+               slat = min(mask$xyCoords$y),
+               elat = max(mask$xyCoords$y))
+  parts <- list(part)[rep(1,nPart)]
+
+  for (iPart in 1:(nPart)) {
+    parts[[iPart]]$sx <- (iPart -1) * (partSize/length(mask$xyCoords$y)) +1
+    parts[[iPart]]$slon <- mask$xyCoords$x[parts[[iPart]]$sx]
+    parts[[iPart]]$elon <- mask$xyCoords$x[iPart * (partSize/length(mask$xyCoords$y))]
+  }
+  parts[[nPart]]$elon <- mask$xyCoords$x[length(mask$xyCoords$x)]
+  parts[[nPart]]$nx <- (length(mask$xyCoords$x) - parts[[nPart]]$sx) + 1
+
+  return(parts)
+}
+# setSubDomains <- function(settings, mask, partSize = NULL) {
+#   mask <- elevation
+#   partSize <- 50
+#   # partSize <- 59
+#   # partBased <- "lon"
+#   # partSize <-NULL
+#   nCells<-length(mask$xyCoords$x)*length(mask$xyCoords$y)
+#
+#   if (is.null(partSize)) {
+#     print(paste0("Partsize not defined, so using max: ", nCells, " (only 1 part)"))
+#     partSize <- nCells
+#   }
+#   partSizeOld <- partSize
+#   nPart<-ceiling(nCells/partSize)
+#   partSize<-ceiling(sqrt(nCells/nPart))^2
+#   nPart<-ceiling(nCells/partSize)
+#   # partSize <- ceiling(nCells/partSize)
+#   if (partSizeOld != partSize) {
+#     print(paste0("partsize should be a multiplication of ny(", length(mask$xyCoords$y),"), so changed to: ", partSize))
+#   }
+#
+#   nActive <- length(mask$Data[!is.na(mask$Data)])
+#   print(paste0("Total cells: ", nCells, ", Active Cells: ", nActive, ", nParts: ", nPart))
+#
+#   part <- list(sx = NULL,
+#                nx = partSize/length(mask$xyCoords$y),
+#                sy = 1,
+#                ny = length(mask$xyCoords$y),
+#                slon = NULL,
+#                elon = NULL,
+#                slat = min(mask$xyCoords$y),
+#                elat = max(mask$xyCoords$y))
+#   parts <- list(part)[rep(1,nPart)]
+#
+#   for (iPart in 1:(nPart)) {
+#     parts[[iPart]]$sx <- (iPart -1) * (partSize/length(mask$xyCoords$y)) +1
+#     parts[[iPart]]$slon <- mask$xyCoords$x[parts[[iPart]]$sx]
+#     parts[[iPart]]$elon <- mask$xyCoords$x[iPart * (partSize/length(mask$xyCoords$y))]
+#   }
+#   parts[[nPart]]$elon <- mask$xyCoords$x[length(mask$xyCoords$x)]
+#   parts[[nPart]]$nx <- (length(mask$xyCoords$x) - parts[[nPart]]$sx) + 1
+#
+#   return(parts)
+# }
+
 
 ## INIT INPUT FILES/VARS
 settings <- setInputVars(settings,list(
@@ -28,14 +116,14 @@ settings <- setInputVars(settings,list(
 ))
 settings$elevation  <- list(ncFileName = "/home/wietse/Documents/Projects/VIC_model/MetSim/dataWietse/WFDEI-elevation.nc", ncName = "elevation")
 
-# ## INIT INPUT FILES/VARS
-# settings <- setInputVars(settings,list(
-#                            pr         = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "prAdjust",        vicIndex = 9,   alma = FALSE),
-#                            tasmin     = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "tasminAdjust",    vicIndex = 17),
-#                            tasmax     = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "tasmaxAdjust",    vicIndex = 16),
-#                            wind       = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "windAdjust",      vicIndex = 20)
-#                          ))
-# settings$elevation <- list(ncFileName = "./data/domain_elev_Mekong.nc", ncName = "elev")
+## INIT INPUT FILES/VARS
+settings <- setInputVars(settings,list(
+                           pr         = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "prAdjust",        vicIndex = 9,   alma = FALSE),
+                           tasmin     = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "tasminAdjust",    vicIndex = 17),
+                           tasmax     = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "tasmaxAdjust",    vicIndex = 16),
+                           wind       = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "windAdjust",      vicIndex = 20)
+                         ))
+settings$elevation <- list(ncFileName = "./data/domain_elev_Mekong.nc", ncName = "elev")
 
 ## INIT OUTPUT FILES/VARS
 settings$outputVars <- list(
@@ -58,8 +146,13 @@ elevation <- ncLoad(file = settings$elevation$ncFileName,
 makeNetcdfOut(settings, elevation)
 
 ## DIVIDE DOMAIN IN PARTS (NOT TO SMALL AND NOT TOO BIG(SPEED vs MEMORY))
-# settings$parts<- setSubDomains(settings, elevation, partSize = NULL)
-settings$parts<- setSubDomains(settings, elevation, partSize = 200)
+settings$parts<- setSubDomains(settings, elevation, partSize = NULL)
+# settings$parts<- setSubDomains(settings, elevation, partSize = 200)
+for (iPart in 1:length(settings$parts)) {
+  print(paste("part:", iPart, settings$parts[[iPart]]$sx, settings$parts[[iPart]]$nx, settings$parts[[iPart]]$sy, settings$parts[[iPart]]$ny,
+              settings$parts[[iPart]]$slon, settings$parts[[iPart]]$elon, settings$parts[[iPart]]$slat, settings$parts[[iPart]]$elat))
+}
+
 
 ## SUBDOMAIN LOOP / MPI LOOP
 foreach(iPart = 1:length(settings$parts)) %dopar% {

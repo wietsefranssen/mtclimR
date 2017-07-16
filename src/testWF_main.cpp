@@ -207,7 +207,6 @@ List mtclimRun(List forcing_dataR, List settings) {
   free_atmos(global_param.nrecs, &atmos);
   free_out_data(&out_data);
 
-  out_dataAllRecs = (double **)calloc(out_data_files[0].nvars,sizeof(double*));
   for(int i=0;i<out_data_files[0].nvars;i++) {
     free(out_dataAllRecs[i]);
   }

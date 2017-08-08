@@ -114,7 +114,44 @@ makeNetcdfOut <- function(settings, mask) {
   nc_close(ncid)
 }
 
-setSubDomains <- function(settings, mask, partSize = NULL) {
+setSubDomains <- function(settings, mask, nPart = NULL) {
+  maxPart <- length(mask$xyCoords$y)
+  nCells<-length(mask$xyCoords$x)*length(mask$xyCoords$y)
+
+  if (nPart > maxPart) {
+    print(paste0("nPart (", nPart, ") is greater than maxPart (", maxPart, "), nPart is now adapted to maxPart: ", maxPart))
+    print(paste0("Be warned that this can case memory issues!"))
+    nPart <- maxPart
+  }
+
+  nActive <- length(mask$Data[!is.na(mask$Data)])
+  print(paste0("Total cells: ", nCells, ", Active Cells: ", nActive, ", nParts: ", nPart))
+
+  partSize <- ceiling(nCells/nPart)
+  partSize <- ceiling(partSize/length(mask$xyCoords$x)) * length(mask$xyCoords$x)
+
+  part <- list(sx = 1,
+               nx = length(mask$xyCoords$x),
+               sy = NULL,
+               ny = partSize/length(mask$xyCoords$x),
+               slon = min(mask$xyCoords$x),
+               elon = max(mask$xyCoords$x),
+               slat = NULL,
+               elat = NULL)
+  parts <- list(part)[rep(1,nPart)]
+
+  for (iPart in 1:(nPart)) {
+    parts[[iPart]]$sy <- (iPart -1) * (partSize/length(mask$xyCoords$x)) +1
+    parts[[iPart]]$slat <- mask$xyCoords$y[parts[[iPart]]$sy]
+    parts[[iPart]]$elat <- mask$xyCoords$y[iPart * (partSize/length(mask$xyCoords$x))]
+  }
+  parts[[nPart]]$elat <- mask$xyCoords$y[length(mask$xyCoords$y)]
+  parts[[nPart]]$ny <- (length(mask$xyCoords$y) - parts[[nPart]]$sy) + 1
+
+  return(parts)
+}
+
+setSubDomains_old <- function(settings, mask, partSize = NULL) {
   # mask <- elevation
   # partSize <- 50
   # partBased <- "lon"

@@ -1,11 +1,12 @@
 #library(devtools)
 #install_git("https://github.com/wietsefranssen/mtclimR.git", branch="mtclimMultiCore")
-
+install_git("https://github.com/wietsefranssen/mtclimR.git", branch="mtclimOpenMPParts")
 rm (list = ls())
 library(WFRTools)
 library(doParallel)
 library(mtclimR)
 nCores<-2
+memMax<-1000 # in mb
 registerDoParallel(cores=nCores)
 start.time.total <- Sys.time()
 print(paste("nCores: ", nCores))
@@ -14,9 +15,8 @@ print(paste("nCores: ", nCores))
 settings <- initSettings(startdate = "1950-01-01",
                          enddate = "1950-1-31",
                          outstep = 6,
-                         lonlatbox = c(100.75, 102.25, 32.25, 36.25))#,
-# parts = 2)
-# lonlatbox = c(92.25, 110.25, 7.25, 36.25))
+                         lonlatbox = c(92.25, 110.25, 7.25, 36.25))
+                         # lonlatbox = c(100.75, 102.25, 32.25, 36.25))#,
 # lonlatbox = c(-179.75, 179.75, -89.75, 89.75))
 
 ## INIT INPUT FILES/VARS
@@ -49,7 +49,19 @@ makeNetcdfOut(settings, elevation)
 ## Subdivide in parts
 settings_org <- settings
 elevation_org <- elevation
-parts <- setSubDomains(settings, elevation, partSize = 20)
+
+#mask<-elevation
+#nPart <- 200
+
+## Calculate memory needed:
+length(elevation$Data)
+memInput <- length(elevation$Data) * settings$intern$nrec_in * length(settings$inputVars) * 8 /(1024*1024)
+memOutput <- length(elevation$Data) * settings$intern$nrec_out * length(settings$outputVars) * 8 /(1024*1024)
+memExtra <- length(elevation$Data) * 100 * 8 /(1024*1024)
+memTotal <- memInput + memOutput + memExtra
+nPart <- ceiling(memTotal / memMax)
+
+parts <- setSubDomains(settings, elevation, nPart = nPart)
 
 for (iPart in 1:length(parts)) {
 
@@ -62,7 +74,6 @@ for (iPart in 1:length(parts)) {
 
   ## DEFINE OUTPUT ARRAY
   el <- array(NA, dim = c(part$nx, part$ny, settings$intern$nrec_out))
-  # el <- array(NA, dim = c(length(elevation$xyCoords$x), length(elevation$xyCoords$y), settings$intern$nrec_out))
   toNetCDFData <- list(el)[rep(1,length(settings$outputVars))]
   print(paste0("output array: ", format(object.size(toNetCDFData), units = "auto")))
   rm(el)

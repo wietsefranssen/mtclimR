@@ -105,8 +105,12 @@ makeNetcdfOut <- function(settings, mask) {
   ncatt_put( ncid, "lat", "axis",          "Y")
   ncatt_put( ncid, "time", "standard_name", "time")
   ncatt_put( ncid, "time", "calendar",     "standard")
-  ncatt_put( ncid, names(settings$outputVars[iVar]), "standard_name", names(settings$outputVars[iVar]))
-
+  for (iVar in 1:length(settings$outputVars))
+  {
+    ncatt_put( ncid, names(settings$outputVars[iVar]), "standard_name", names(settings$outputVars[iVar]))
+    ncatt_put( ncid, names(settings$outputVars[iVar]), "vic_name", settings$outputVars[[iVar]]$VICName)
+    ncatt_put( ncid, names(settings$outputVars[iVar]), "units", settings$outputVars[[iVar]]$units)
+  }
   # ## Global Attributes
   ncatt_put( ncid, 0, "NetcdfCreatationDate", as.character(Sys.Date()))
 

@@ -2,6 +2,6 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 mtclimRun <- function(forcing_dataR, settings) {
-    .Call('mtclimR_mtclimRun', PACKAGE = 'mtclimR', forcing_dataR, settings)
+    .Call('_mtclimR_mtclimRun', PACKAGE = 'mtclimR', forcing_dataR, settings)
 }
 

@@ -179,6 +179,7 @@ FILE  *open_state_file(global_param_struct *, filenames_struct, int, int);
 
 void parse_output_info(filenames_struct *, FILE *, out_data_file_struct **, out_data_struct *);
 void parse_output_info_dummy(out_data_file_struct **, out_data_struct *);
+void parse_output_info_R(out_data_file_struct **, out_data_struct *, Rcpp::List list);
 double penman(double, double, double, double, double, double, double);
 double priestley(double, double);
 int    put_data(dist_prcp_struct *, atmos_data_struct *,

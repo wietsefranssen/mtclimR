@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // mtclimRun
 List mtclimRun(List forcing_dataR, List settings);
-RcppExport SEXP mtclimR_mtclimRun(SEXP forcing_dataRSEXP, SEXP settingsSEXP) {
+RcppExport SEXP _mtclimR_mtclimRun(SEXP forcing_dataRSEXP, SEXP settingsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -16,4 +16,14 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(mtclimRun(forcing_dataR, settings));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_mtclimR_mtclimRun", (DL_FUNC) &_mtclimR_mtclimRun, 2},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_mtclimR(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

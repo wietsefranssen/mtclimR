@@ -5,8 +5,9 @@
 
 static char vcid[] = "$Id$";
 
-void parse_output_info_dummy(out_data_file_struct **out_data_files,
-                             out_data_struct *out_data)
+void parse_output_info_R(out_data_file_struct **out_data_files,
+                             out_data_struct *out_data,
+                             Rcpp::List list)
   /**********************************************************************
    parse_output_info	Ted Bohn	            September 10 2006
 
@@ -41,20 +42,16 @@ void parse_output_info_dummy(out_data_file_struct **out_data_files,
   // PRT_SNOW_BAND is ignored if N_OUTFILES has been specified
   options.PRT_SNOW_BAND = FALSE;
   //
-  (*out_data_files)[0].nvars = 7;
-  // (*out_data_files)[0].nvars = 13;
+
+  /** Find parameters **/
+  (*out_data_files)[0].nvars = (int)list["nOut"];
   (*out_data_files)[0].varid = (int *) calloc((*out_data_files)[0].nvars, sizeof (int));
   outvarnum = 0;
 
-
-  if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) "OUT_PREC", 0, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }
-  if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) "OUT_AIR_TEMP", 1, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }
-  if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) "OUT_SHORTWAVE", 2, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }
-  if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) "OUT_LONGWAVE", 3, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }
-  if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) "OUT_PRESSURE", 4, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }
-  if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) "OUT_QAIR", 5, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }
-  if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) "OUT_WIND", 6, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }
-
+  Rcpp::CharacterVector outNames =list["outNames"];
+  for(int i=0;i<(int)list["nOut"];i++) {
+    if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) outNames[i], i, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }
+  }
   // if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) "OUT_PREC", 0, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }
   // if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) "OUT_RAINF", 1, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }
   // if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) "OUT_SNOWF", 2, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }

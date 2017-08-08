@@ -39,7 +39,7 @@ List mtclimRun(List forcing_dataR, List settings) {
   out_data = create_output_list();
   out_data_files = set_output_defaults(out_data);
 
-  parse_output_info_dummy(&out_data_files, out_data);
+  parse_output_info_R(&out_data_files, out_data, settings);
 
 
   /** Make Date Data Structure **/

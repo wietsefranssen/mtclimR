@@ -1,12 +1,12 @@
-#library(devtools)
-#install_git("https://github.com/wietsefranssen/mtclimR.git", branch="mtclimMultiCore")
-install_git("https://github.com/wietsefranssen/mtclimR.git", branch="mtclimOpenMPParts")
+# library(devtools)
+# install_git("https://github.com/wietsefranssen/mtclimR.git", branch="mtclimMultiCore")
+# install_git("https://github.com/wietsefranssen/mtclimR.git", branch="mtclimOpenMPParts")
 rm (list = ls())
 library(WFRTools)
 library(doParallel)
 library(mtclimR)
 nCores<-2
-memMax<-1000 # in mb
+memMax<-0.001 # in gb
 registerDoParallel(cores=nCores)
 start.time.total <- Sys.time()
 print(paste("nCores: ", nCores))
@@ -15,8 +15,8 @@ print(paste("nCores: ", nCores))
 settings <- initSettings(startdate = "1950-01-01",
                          enddate = "1950-1-31",
                          outstep = 6,
-                         lonlatbox = c(92.25, 110.25, 7.25, 36.25))
-                         # lonlatbox = c(100.75, 102.25, 32.25, 36.25))#,
+                         # lonlatbox = c(92.25, 110.25, 7.25, 36.25))
+                         lonlatbox = c(100.75, 102.25, 32.25, 36.25))#,
 # lonlatbox = c(-179.75, 179.75, -89.75, 89.75))
 
 ## INIT INPUT FILES/VARS
@@ -30,14 +30,23 @@ settings$elevation <- list(ncFileName = "./data/domain_elev_Mekong.nc", ncName =
 
 ## INIT OUTPUT FILES/VARS
 settings$outputVars <- list(
-  pr         = list(ncName = "pr"),
-  tas     = list(ncName = "tas"),
-  shortwave     = list(ncName = "shortwave"),
-  longwave     = list(ncName = "longwave"),
-  pressure     = list(ncName = "pressure"),
-  wind       = list(ncName = "wind")
+  pr         = list(VICName = "OUT_PREC",       units = "mm"),
+  tas        = list(VICName = "OUT_AIR_TEMP",   units = "C"),
+  shortwave  = list(VICName = "OUT_SHORTWAVE",  units = "W m-2"),
+  longwave   = list(VICName = "OUT_LONGWAVE",   units = "W m-2"),
+  pressure   = list(VICName = "OUT_PRESSURE",   units = "kPa"),
+  qair       = list(VICName = "OUT_QAIR",       units = "kg kg-1"),
+  vp         = list(VICName = "OUT_VP",         units = "kPa"),
+  rel_humid  = list(VICName = "OUT_REL_HUMID",  units = "fraction"),
+  density    = list(VICName = "OUT_DENSITY",    units = "kg m-3"),
+  wind       = list(VICName = "OUT_WIND",       units = "m s-1")
 )
 
+## Set outvars in settings
+settings$mtclim$nOut <- length(settings$outputVars)
+for (i in 1:length(settings$outputVars)) {
+  settings$mtclim$outNames[i]<-settings$outputVars[[i]]$VICName
+}
 ## LOAD MASK/ELEVATION
 elevation <- ncLoad(file = settings$elevation$ncFileName,
                     varName = settings$elevation$ncName,
@@ -50,16 +59,14 @@ makeNetcdfOut(settings, elevation)
 settings_org <- settings
 elevation_org <- elevation
 
-#mask<-elevation
-#nPart <- 200
-
 ## Calculate memory needed:
 length(elevation$Data)
-memInput <- length(elevation$Data) * settings$intern$nrec_in * length(settings$inputVars) * 8 /(1024*1024)
-memOutput <- length(elevation$Data) * settings$intern$nrec_out * length(settings$outputVars) * 8 /(1024*1024)
-memExtra <- length(elevation$Data) * 100 * 8 /(1024*1024)
+memInput <- length(elevation$Data) * settings$intern$nrec_in * length(settings$inputVars) * 8 /(1024*1024*1024)
+memOutput <- length(elevation$Data) * settings$intern$nrec_out * length(settings$outputVars) * 8 /(1024*1024*1024)
+memExtra <- length(elevation$Data) * 100 * 8 /(1024*1024*1024)
 memTotal <- memInput + memOutput + memExtra
-nPart <- ceiling(memTotal / memMax)
+print(sprintf("Total memory: %6.2f Gb (Max mem: %6.2f Gb)", memTotal, memMax))
+nPart <- ceiling(memTotal / memMax / 2) #/2 for safety
 
 parts <- setSubDomains(settings, elevation, nPart = nPart)
 
@@ -88,7 +95,7 @@ for (iPart in 1:length(parts)) {
   ## CELL LOOP
   for (iy in 1:part$ny) {
     start.time.mtclim <- Sys.time()
-    print(paste("running iy: ",iy))
+    # print(paste("running iy: ",iy))
     output<-foreach(ix = 1:part$nx) %dopar% {
       # for (ix in 1:length(elevation$xyCoords$x)) {
       if (!is.na(elevation$Data[iy,ix])) {
@@ -103,8 +110,8 @@ for (iPart in 1:length(parts)) {
         output$out_data
       }
     }
-    print(paste0("mtclim temp array: ", format(object.size(output), units = "auto")))
-    print(sprintf("mtclim: %6.1f min",as.numeric(Sys.time() - start.time.mtclim, units = "mins")))
+    # print(paste0("mtclim temp array: ", format(object.size(output), units = "auto")))
+    # print(sprintf("mtclim: %6.1f min",as.numeric(Sys.time() - start.time.mtclim, units = "mins")))
 
     for (ix in 1:length(elevation$xyCoords$x)) {
       if (!is.na(elevation$Data[iy,ix])) {
@@ -116,8 +123,13 @@ for (iPart in 1:length(parts)) {
         }
       }
     }
-    rm(output)
-    print(paste0("adding to output array: done"))
+    # rm(output)
+    print(sprintf("part:%3.0d/%.0d, iy:%3.0d/%.0d, mtclim done in: %6.1f min",
+                  iPart, nPart,
+                  iy, part$ny,
+                  as.numeric(Sys.time() - start.time.mtclim, units = "mins")
+                  ))
+    # print(paste0("adding to output array: done"))
   }
 
   ## ADD OUTPUT TO NETCDF
@@ -127,7 +139,7 @@ for (iPart in 1:length(parts)) {
   for (iVar in 1:length(settings$outputVars))
   {
     ncvar_put(ncid,
-              settings$outputVars[[iVar]]$ncName,
+              names(settings$outputVars)[iVar],
               toNetCDFData[[iVar]],
               start = c(part$sx,
                         part$sy,

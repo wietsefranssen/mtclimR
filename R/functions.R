@@ -177,20 +177,24 @@ readForcing <- function(settings, iPart) {
   return(forcing_dataR)
 }
 
-readForcingAll <- function(settings, mask) {
+readForcingAll <- function(part, settings, mask) {
   # mask<-elevation
   forcing_dataR <- list()
   for (i in 1:length(settings$inputVars)) {
-    forcing_dataR[[i]]<- array(0, dim=c(settings$intern$nrec_in,  length(mask$xyCoords$y),  length(mask$xyCoords$x)))
+    forcing_dataR[[i]]<- array(0, dim=c(settings$intern$nrec_in,  part$ny,  part$nx))
   }
   ## Read data
   for (iVar in 1:length(settings$inputVars)) {
     forcing_dataR[[iVar]][] <- ncLoad(file = settings$inputVars[[iVar]]$ncFileName,
                                       varName = settings$inputVars[[iVar]]$ncName,
-                                      lonlatbox = c(settings$lonlatbox[1],
-                                                    settings$lonlatbox[2],
-                                                    settings$lonlatbox[3],
-                                                    settings$lonlatbox[4]),
+                                      # lonlatbox = c(settings$lonlatbox[1],
+                                      #               settings$lonlatbox[2],
+                                      #               settings$lonlatbox[3],
+                                      #               settings$lonlatbox[4]),
+                                      lonlatbox = c(part$slon,
+                                                    part$elon,
+                                                    part$slat,
+                                                    part$elat),
                                       timesteps = c(1:settings$intern$nrec_in))$Data
   }
   return(forcing_dataR)

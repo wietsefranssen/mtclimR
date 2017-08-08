@@ -14,7 +14,8 @@ print(paste("nCores: ", nCores))
 settings <- initSettings(startdate = "1950-01-01",
                          enddate = "1950-1-31",
                          outstep = 6,
-                        lonlatbox = c(100.75, 102.25, 32.25, 36.25))
+                         lonlatbox = c(100.75, 102.25, 32.25, 36.25))#,
+# parts = 2)
 # lonlatbox = c(92.25, 110.25, 7.25, 36.25))
 # lonlatbox = c(-179.75, 179.75, -89.75, 89.75))
 
@@ -45,72 +46,87 @@ elevation <- ncLoad(file = settings$elevation$ncFileName,
 ## makeOutputNetCDF
 makeNetcdfOut(settings, elevation)
 
-## DEFINE OUTPUT ARRAY
-el <- array(NA, dim = c(length(elevation$xyCoords$x), length(elevation$xyCoords$y), settings$intern$nrec_out))
-toNetCDFData <- list(el)[rep(1,length(settings$outputVars))]
-print(paste0("output array: ", format(object.size(toNetCDFData), units = "auto")))
-rm(el)
+## Subdivide in parts
+settings_org <- settings
+elevation_org <- elevation
+parts <- setSubDomains(settings, elevation, partSize = 20)
 
-## LOAD WHOLE DOMAIN FROM NETCDF
-print(paste0("reading..."))
-start.time.read <- Sys.time()
-forcing_dataRTotal <- readForcingAll(settings, elevation)
-print(paste0("forcing array: ", format(object.size(forcing_dataRTotal), units = "auto")))
-print(sprintf("read: %6.1f min",as.numeric(Sys.time() - start.time.read, units = "mins")))
+for (iPart in 1:length(parts)) {
 
-## CELL LOOP
-for (iy in 1:length(elevation$xyCoords$y)) {
-  start.time.mtclim <- Sys.time()
-  print(paste("running iy: ",iy))
-  output<-foreach(ix = 1:length(elevation$xyCoords$x)) %dopar% {
-    # for (ix in 1:length(elevation$xyCoords$x)) {
-    if (!is.na(elevation$Data[iy,ix])) {
-      forcing_dataR <- selectForcingCell(settings, forcing_dataRTotal, ix, iy)
+  # ## Change settings for current part
+  part <- parts[[iPart]]
+  settings$lonlatbox <- c(part$slon, part$elon, part$slat, part$elat)
+  elevation <- ncLoad(file = settings$elevation$ncFileName,
+                      varName = settings$elevation$ncName,
+                      lonlatbox = settings$lonlatbox)
 
-      settings$mtclim$elevation <- elevation$Data[iy,ix]
-      settings$mtclim$lon<-elevation$xyCoords$x[ix]
-      settings$mtclim$lat<-elevation$xyCoords$y[iy]
+  ## DEFINE OUTPUT ARRAY
+  el <- array(NA, dim = c(part$nx, part$ny, settings$intern$nrec_out))
+  # el <- array(NA, dim = c(length(elevation$xyCoords$x), length(elevation$xyCoords$y), settings$intern$nrec_out))
+  toNetCDFData <- list(el)[rep(1,length(settings$outputVars))]
+  print(paste0("output array: ", format(object.size(toNetCDFData), units = "auto")))
+  rm(el)
 
-      ## RUN MLTCLIM
-      output<-mtclimRun(forcing_dataR = forcing_dataR, settings = settings$mtclim)
-      output$out_data
-    }
-  }
-  print(paste0("mtclim temp array: ", format(object.size(output), units = "auto")))
-  print(sprintf("mtclim: %6.1f min",as.numeric(Sys.time() - start.time.mtclim, units = "mins")))
+  ## LOAD WHOLE DOMAIN FROM NETCDF
+  print(paste0("reading..."))
+  start.time.read <- Sys.time()
+  forcing_dataRTotal <- readForcingAll(part, settings, elevation)
+  print(paste0("forcing array: ", format(object.size(forcing_dataRTotal), units = "auto")))
+  print(sprintf("read: %6.1f min",as.numeric(Sys.time() - start.time.read, units = "mins")))
 
-  for (ix in 1:length(elevation$xyCoords$x)) {
-    if (!is.na(elevation$Data[iy,ix])) {
-      ## ADD TO OUTPUT ARRAY
-      for (iVar in 1:length(settings$outputVars)) {
-#      if (!is.na(output[[ix]][[iVar]][1])) {
-        toNetCDFData[[iVar]][ix,iy,] <- output[[ix]][[iVar]]
-#  }
+  ## CELL LOOP
+  for (iy in 1:part$ny) {
+    start.time.mtclim <- Sys.time()
+    print(paste("running iy: ",iy))
+    output<-foreach(ix = 1:part$nx) %dopar% {
+      # for (ix in 1:length(elevation$xyCoords$x)) {
+      if (!is.na(elevation$Data[iy,ix])) {
+        forcing_dataR <- selectForcingCell(settings, forcing_dataRTotal, ix, iy)
+
+        settings$mtclim$elevation <- elevation$Data[iy,ix]
+        settings$mtclim$lon<-elevation$xyCoords$x[ix]
+        settings$mtclim$lat<-elevation$xyCoords$y[iy]
+
+        ## RUN MLTCLIM
+        output<-mtclimRun(forcing_dataR = forcing_dataR, settings = settings$mtclim)
+        output$out_data
       }
     }
+    print(paste0("mtclim temp array: ", format(object.size(output), units = "auto")))
+    print(sprintf("mtclim: %6.1f min",as.numeric(Sys.time() - start.time.mtclim, units = "mins")))
+
+    for (ix in 1:length(elevation$xyCoords$x)) {
+      if (!is.na(elevation$Data[iy,ix])) {
+        ## ADD TO OUTPUT ARRAY
+        for (iVar in 1:length(settings$outputVars)) {
+          #      if (!is.na(output[[ix]][[iVar]][1])) {
+          toNetCDFData[[iVar]][ix,iy,] <- output[[ix]][[iVar]]
+          #  }
+        }
+      }
+    }
+    rm(output)
+    print(paste0("adding to output array: done"))
   }
-  rm(output)
-  print(paste0("adding to output array: done"))
-}
 
-## ADD OUTPUT TO NETCDF
-print(paste0("writing..."))
-start.time.write <- Sys.time()
-ncid <- nc_open(settings$outfile, write = TRUE)
-for (iVar in 1:length(settings$outputVars))
-{
-  ncvar_put(ncid,
-            settings$outputVars[[iVar]]$ncName,
-            toNetCDFData[[iVar]],
-            start = c(1,
-                      1,
-                      1),
-            count = c(length(elevation$xyCoords$x),
-                      length(elevation$xyCoords$y),
-                      settings$intern$nrec_out)
-  )
+  ## ADD OUTPUT TO NETCDF
+  print(paste0("writing..."))
+  start.time.write <- Sys.time()
+  ncid <- nc_open(settings$outfile, write = TRUE)
+  for (iVar in 1:length(settings$outputVars))
+  {
+    ncvar_put(ncid,
+              settings$outputVars[[iVar]]$ncName,
+              toNetCDFData[[iVar]],
+              start = c(part$sx,
+                        part$sy,
+                        1),
+              count = c(part$nx,
+                        part$ny,
+                        settings$intern$nrec_out)
+    )
+  }
+  nc_close(ncid)
 }
-nc_close(ncid)
-
 print(sprintf("write: %6.1f min",as.numeric(Sys.time() - start.time.write, units = "mins")))
 print(sprintf("total: %6.1f min",as.numeric(Sys.time() - start.time.total, units = "mins")))

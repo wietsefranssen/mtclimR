@@ -84,12 +84,15 @@ makeNetcdfOut <- function(settings, mask) {
   timeArray <-c(0:(settings$intern$nrec_out-1)) * (24 / (24/settings$outstep))
   dimT <- ncdim_def("time", paste0("hours since ",timeString), timeArray, unlim = FALSE)
 
+  chunksizes_preffered<-c(40,40,256)
+  dimsizes<-c(length(mask$xyCoords$x),length(mask$xyCoords$y),settings$intern$nrec_out)
+  chunksizes<- pmin(chunksizes_preffered,dimsizes)
   ################
-  data <- ncvar_def(name=names(settings$outputVars[1]), units='', dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
+  data <- ncvar_def(name=names(settings$outputVars[1]), units='', compression = 7, chunksizes=chunksizes, dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
   dataAllVars <- list(data)[rep(1,length(settings$outputVars))]
   for (iVar in 1:length(settings$outputVars))
   {
-    dataAllVars[[iVar]] <- ncvar_def(name=names(settings$outputVars[iVar]), units='', dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
+    dataAllVars[[iVar]] <- ncvar_def(name=names(settings$outputVars[iVar]), units='', compression = 7, chunksizes=chunksizes, dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
   }
 
   ## SAVE AS NC-DATA

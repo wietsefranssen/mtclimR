@@ -66,7 +66,7 @@ memOutput <- length(elevation$Data) * settings$intern$nrec_out * length(settings
 memExtra <- length(elevation$Data) * 100 * 8 /(1024*1024*1024)
 memTotal <- memInput + memOutput + memExtra
 print(sprintf("Total memory: %6.2f Gb (Max mem: %6.2f Gb)", memTotal, memMax))
-nPart <- ceiling(memTotal / memMax / 2) #/2 for safety
+nPart <- ceiling(memTotal / memMax * 2) #*2 for safety
 
 parts <- setSubDomains(settings, elevation, nPart = nPart)
 

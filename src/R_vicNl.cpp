@@ -85,12 +85,11 @@ void vicmain(double **forcing_data){
                    &soil_con, out_data_files, out_data);
   printf("initialize atmos: end\n");
 
-
   // /** cleanup **/
-  // free_atmos(global_param.nrecs, &atmos);
+  free_atmos(global_param.nrecs, &atmos);
   // free_dmy(&dmy);
-  // free_out_data_files(&out_data_files);
-  // free_out_data(&out_data);
-  //
+  free_out_data_files(&out_data_files);
+  //free_out_data(&out_data);
+  
   // return EXIT_SUCCESS;
 }	/* End Main Program */

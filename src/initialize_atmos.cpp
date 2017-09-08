@@ -1247,17 +1247,22 @@ void initialize_atmos(atmos_data_struct        *atmos,
   free(tskc);
   free(daily_vp);
 
-  for(i=0;i<N_FORCING_TYPES;i++)  {
-//    if (forcing_data[i] != NULL)
-//      free((char *)forcing_data[i]);
-      free(forcing_data[i]);
-//    if (local_forcing_data[i] != NULL)
-//      free((char *)local_forcing_data[i]);
-      free(local_forcing_data[i]);
-//fprintf(stderr,"freed type %d\n",i);
+//////  for(i=0;i<N_FORCING_TYPES;i++)  {
+////////    if (forcing_data[i] != NULL)
+////////      free((char *)forcing_data[i]);
+//////      free(forcing_data[i]);
+////////    if (local_forcing_data[i] != NULL)
+////////      free((char *)local_forcing_data[i]);
+//////      free(local_forcing_data[i]);
+////////fprintf(stderr,"freed type %d\n",i);
+//////  }
+////////  free((char *)forcing_data);
+//////  free(forcing_data);
+  
+  
+  for (type=0; type<N_FORCING_TYPES; type++) {
+    free(local_forcing_data[type]);
   }
-//  free((char *)forcing_data);
-  free(forcing_data);
 //  free((char *)local_forcing_data);
   free(local_forcing_data);
   free((char *)dmy_local);

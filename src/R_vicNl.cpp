@@ -90,6 +90,11 @@ void vicmain(double **forcing_data){
   // free_dmy(&dmy);
   free_out_data_files(&out_data_files);
   //free_out_data(&out_data);
-  
+  for(int i=0;i<N_FORCING_TYPES;i++) {
+    // if (param_set.TYPE[i].SUPPLIED) {
+    free(forcing_data[i]);
+  }
+  free(forcing_data);
+
   // return EXIT_SUCCESS;
 }	/* End Main Program */

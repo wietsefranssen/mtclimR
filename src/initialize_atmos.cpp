@@ -1253,6 +1253,8 @@ void initialize_atmos(atmos_data_struct        *atmos,
   free(tskc);
   free(daily_vp);
 
+  free((char *)dmy_local);
+
 //////  for(i=0;i<N_FORCING_TYPES;i++)  {
 ////////    if (forcing_data[i] != NULL)
 ////////      free((char *)forcing_data[i]);
@@ -1266,12 +1268,15 @@ void initialize_atmos(atmos_data_struct        *atmos,
 //////  free(forcing_data);
   
   
+//  for (type=0; type<N_FORCING_TYPES; type++) {
+//    free(local_forcing_data[type]);
+//  }
+//  free(local_forcing_data);
+//
   for (type=0; type<N_FORCING_TYPES; type++) {
-    free(local_forcing_data[type]);
+    free((char *)local_forcing_data[type]);
   }
-//  free((char *)local_forcing_data);
-  free(local_forcing_data);
-  free((char *)dmy_local);
+  free((char *)local_forcing_data);
 
   // If OUTPUT_FORCE is set to TRUE in user_def.h then the full
   // forcing data array is dumped into a new set of files.

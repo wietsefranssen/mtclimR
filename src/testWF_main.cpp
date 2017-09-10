@@ -196,12 +196,20 @@ List mtclimRun(List forcing_dataR, List settings) {
   outListR["out_data"] = out_dataR;
 
   ///// FREE
+//  for(int i=0;i<N_FORCING_TYPES;i++) {
+//    if (param_set.TYPE[i].SUPPLIED) {
+//      free(forcing_data[i]);
+//    }
+//  }
+//  free(forcing_data);
+
   for(int i=0;i<N_FORCING_TYPES;i++) {
     if (param_set.TYPE[i].SUPPLIED) {
-      free(forcing_data[i]);
+      free((char *)forcing_data[i]);
     }
   }
-  free(forcing_data);
+  free((char *)forcing_data);
+  
   free_dmy(&dmy);
   free_atmos(global_param.nrecs, &atmos);
   free_out_data(&out_data);

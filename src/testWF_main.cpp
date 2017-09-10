@@ -198,7 +198,7 @@ List mtclimRun(List forcing_dataR, List settings) {
   ///// FREE
   for(int i=0;i<N_FORCING_TYPES;i++) {
     if (param_set.TYPE[i].SUPPLIED) {
-     free(forcing_data[i]);
+      free(forcing_data[i]);
     }
   }
   free(forcing_data);
@@ -214,6 +214,7 @@ List mtclimRun(List forcing_dataR, List settings) {
 
   return outListR;
 }
+
 // void free_forcing_data(out_data_struct **forcing_data) {
 //   /*************************************************************
 //    free_out_data()      Ted Bohn     April 19, 2007

@@ -249,6 +249,8 @@ void initialize_atmos(atmos_data_struct        *atmos,
     /* rainfall and snowfall supplied */
     if (forcing_data[PREC] == NULL) {
       forcing_data[PREC] = (double *)calloc((global_param.nrecs * NF),sizeof(double));
+      printf("calloc PREC1\n");
+
     }
     for (idx=0; idx<(global_param.nrecs*NF); idx++) {
       forcing_data[PREC][idx] = forcing_data[RAINF][idx] + forcing_data[SNOWF][idx];
@@ -260,6 +262,8 @@ void initialize_atmos(atmos_data_struct        *atmos,
     /* convective and large-scale rainfall and snowfall supplied */
     if (forcing_data[PREC] == NULL) {
       forcing_data[PREC] = (double *)calloc((global_param.nrecs * NF),sizeof(double));
+            printf("calloc PREC2\n");
+
     }
     for (idx=0; idx<(global_param.nrecs*NF); idx++) {
       forcing_data[PREC][idx] = forcing_data[CRAINF][idx] + forcing_data[LSRAINF][idx]
@@ -277,6 +281,8 @@ void initialize_atmos(atmos_data_struct        *atmos,
     /* specific wind_e and wind_n supplied */
     if (forcing_data[WIND] == NULL) {
       forcing_data[WIND] = (double *)calloc((global_param.nrecs * NF),sizeof(double));
+            printf("calloc WIND\n");
+
     }
     for (idx=0; idx<(global_param.nrecs*NF); idx++) {
       forcing_data[WIND][idx] = sqrt( forcing_data[WIND_E][idx]*forcing_data[WIND_E][idx]

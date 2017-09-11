@@ -315,7 +315,6 @@ int data_alloc(const control_struct *ctrl, data_struct *data)
   int ndays;
   
   ndays = ctrl->ndays;
-        printf("malloc\n");
 
   if (ok && ctrl->inyear && !(data->year = (int*) malloc(ndays * sizeof(int)))) {
     printf("Error allocating for year array\n");
@@ -1218,7 +1217,6 @@ void compute_srad_humidity_onetime(int ndays, const control_struct *ctrl, data_s
 int data_free(const control_struct *ctrl, data_struct *data)
 {
   int ok=1;
-          printf("free\n");
 
   if (ctrl->inyear) free(data->year);
   free(data->yday);

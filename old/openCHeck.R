@@ -1,0 +1,10 @@
+library(doParallel)
+# library(pbdNCDF4)
+library(ncdf4)
+registerDoParallel(cores=2)
+filename<-"data/domain_elev_Mekong.nc"
+ncid<-nc_open(filename)
+data<-ncvar_get(ncid, "elev", start = c(10,20), count = c(3,3))
+# data<-ncvar_get(ncid, "elev", start = c(3,3), count = c(3,1), collapse_degen = F)
+print(data)
+aperm(data,c(1,2))

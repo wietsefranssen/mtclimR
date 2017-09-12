@@ -42,7 +42,6 @@ out_data_file_struct *set_output_defaults(out_data_struct *out_data) {
   // Output files
   options.Noutfiles = 1;
   out_data_files = (out_data_file_struct *)calloc(options.Noutfiles,sizeof(out_data_file_struct));
-  strcpy(out_data_files->prefix,"full_data");
   out_data_files->nvars = 8;
   out_data_files->varid = (int *)calloc(out_data_files->nvars, sizeof(int));
 

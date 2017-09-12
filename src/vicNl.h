@@ -35,7 +35,6 @@ double calc_veg_roughness(double);
 double calc_water_balance_error(int, double, double, double);
 FILE  *check_state_file(char *, dmy_struct *, global_param_struct *, int, int,
                         int *);
-filenames_struct cmd_proc(int argc, char *argv[]);
 void   collect_eb_terms(energy_bal_struct, snow_data_struct, cell_data_struct,
                         int *, int *, int *, int *, int *, double, double, double,
                         int, int, double, int, int, double *, double *,
@@ -58,31 +57,10 @@ void   compute_treeline(atmos_data_struct *, dmy_struct *, double, double *, cha
 double compute_zwt(soil_con_struct *, int, double);
 out_data_struct *create_output_list();
 
-void   display_current_settings(int, filenames_struct *, global_param_struct *);
 int    dist_prec(atmos_data_struct *,dist_prcp_struct *,soil_con_struct *, lake_con_struct *,
         out_data_file_struct *,
 		 out_data_struct *, save_data_struct *,
 		 int, int, char, char, char *, int *);
-#if QUICK_FS
-int  distribute_node_moisture_properties(double *, double *, double *, double *,
-					 double *, double *, double *, double ***,
-					 double *, double *, double *, double *, double *,
-					 double *, double *, double *, int, int, char);
-#else
-#if EXCESS_ICE
-int  distribute_node_moisture_properties(double *, double *, double *, double *,
-					 double *, double *, double *, double *,
-					 double *, double *, double *,
-					 double *, double *, double *, double *, double *,
-					 double *, double *, double *, int, int, char);
-#else
-int  distribute_node_moisture_properties(double *, double *, double *,
-					 double *, double *, double *,
-					 double *, double *, double *,
-					 double *, double *, double *, double *, double *,
-					 double *, double *, double *, int, int, char);
-#endif
-#endif
 void   distribute_soil_property(double *,double,double,
 				double **l_param,
 				int, int, double *, double *);
@@ -125,8 +103,6 @@ double get_avg_temp(double, double, double *, double *, int);
 double get_dist(double, double, double, double);
 void   get_force_type(char *, int, int *);
 void   get_force_type_dummy(int, int *);
-global_param_struct get_global_param(filenames_struct *, FILE *);
-global_param_struct get_global_param_dummy();
 global_param_struct get_global_param_R(Rcpp::List list);
 void   get_next_time_step(int *, int *, int *, int *, int *, int);
 
@@ -174,11 +150,6 @@ int    newt_raph(void (*vecfunc)(double *, double *, int, int, ...),
                double *, int);
 void   nrerror(char *);
 
-FILE  *open_file(char string[], char type[]);
-FILE  *open_state_file(global_param_struct *, filenames_struct, int, int);
-
-void parse_output_info(filenames_struct *, FILE *, out_data_file_struct **, out_data_struct *);
-void parse_output_info_dummy(out_data_file_struct **, out_data_struct *);
 void parse_output_info_R(out_data_file_struct **, out_data_struct *, Rcpp::List list);
 double penman(double, double, double, double, double, double, double);
 double priestley(double, double);
@@ -207,7 +178,6 @@ void set_node_parameters(double *, double *, double *, double *, double *, doubl
 			 double *, double *, double *, double *,
 #endif
 			 int, int, char);
-out_data_file_struct *set_output_defaults(out_data_struct *);
 int set_output_var(out_data_file_struct *, int, int, out_data_struct *, char *, int, char *, int, float);
 double snow_albedo(double, double, double, double, double, double, int, char);
 double snow_density(snow_data_struct *, double, double, double, double, double);
@@ -216,29 +186,6 @@ double solve_atmos_moist_bal(double , ...);
 double solve_canopy_energy_bal(double Tfoliage, ...);
 double solve_snow_ground_flux(double Tsurf, ...);
 double solve_surf_energy_bal(double Tsurf, ...);
-#if QUICK_FS
-int    solve_T_profile(double *, double *, char *, int *, double *, double *,double *,
-		       double *, double, double *, double *, double *,
-		       double *, double *, double *, double *, double, double *, double ***,
-		       int, int *, int, int, int, int);
-#else
-int    solve_T_profile(double *, double *, char *, int *, double *, double *,double *,
-		       double *, double, double *, double *, double *,
-		       double *, double *, double *, double *, double, double *,
-#if EXCESS_ICE
-		       double *, double *,
-#endif
-		       int, int *, int, int, int, int);
-
-#endif
-int   solve_T_profile_implicit(double *, double *, double *, double *, double *,
-			       double *, double, double *, double *, double *,
-#if EXCESS_ICE
-			       double *, double *,
-#endif
-			       double *, double *, double *, double *, double, int, int *,
-			       int, int, int, int,
-			       double *, double *, double *, double *, double *, double *, double *);
 double StabilityCorrection(double, double, double, double, double, double);
 double svp(double);
 double svp_slope(double);

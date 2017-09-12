@@ -6,7 +6,7 @@ library(WFRTools)
 library(doParallel)
 library(mtclimR)
 nCores<-2
-memMax<-0.001 # in gb
+memMax<-0.1 # in gb
 registerDoParallel(cores=nCores)
 start.time.total <- Sys.time()
 print(paste("nCores: ", nCores))
@@ -15,8 +15,9 @@ print(paste("nCores: ", nCores))
 settings <- initSettings(startdate = "1950-01-01",
                          enddate = "1950-1-31",
                          outstep = 6,
-                         lonlatbox = c(92.25, 110.25, 7.25, 36.25))
-                         # lonlatbox = c(100.75, 102.25, 32.25, 36.25))#,
+                         lonlatbox = c(108.25, 110.25, 35.25, 36.25))
+#lonlatbox = c(92.25, 110.25, 7.25, 36.25))
+# lonlatbox = c(100.75, 102.25, 32.25, 36.25))#,
 #lonlatbox = c(-179.75, 179.75, -89.75, 89.75))
 
 ## INIT INPUT FILES/VARS
@@ -180,15 +181,13 @@ for (iPart in 1:length(parts)) {
     output<-foreach(ix = 1:part$nx) %dopar% {
       # for (ix in 1:length(elevation$xyCoords$x)) {
       if (!is.na(elevation$Data[iy,ix])) {
-        forcing_dataR <- selectForcingCell(settings, forcing_dataRTotal, ix, iy)
-
         settings$mtclim$elevation <- elevation$Data[iy,ix]
         settings$mtclim$lon<-elevation$xyCoords$x[ix]
         settings$mtclim$lat<-elevation$xyCoords$y[iy]
 
         ## RUN MLTCLIM
-        output<-mtclimRun(forcing_dataR = forcing_dataR, settings = settings$mtclim)
-        output$out_data
+        mtclimRun(forcing_dataR = selectForcingCell(settings, forcing_dataRTotal, ix, iy),
+                  settings = settings$mtclim)$out_data
       }
     }
     # print(paste0("mtclim temp array: ", format(object.size(output), units = "auto")))

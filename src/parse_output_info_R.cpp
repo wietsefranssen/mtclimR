@@ -3,55 +3,26 @@
 #include "vicNl.h"
 #include <string.h>
 
-static char vcid[] = "$Id$";
-
 void parse_output_info_R(out_data_file_struct **out_data_files,
                              out_data_struct *out_data,
-                             Rcpp::List list)
-  /**********************************************************************
-   parse_output_info	Ted Bohn	            September 10 2006
+                             Rcpp::List list) {
 
-   This routine reads the VIC model global control file, getting
-   information for output variables list (if any).
-
-   Modifications:
-   2006-Nov-07 Changed default precision from %.1f to %.4f.	TJB
-   2007-Jan-15 Modified to expect "OUT_TYPE_" at beginning of
-   output data type strings.				TJB
-   2007-Apr-21 Added initialization for format, outfilenum, and
-   outvarnum.					TJB
-   2008-Feb-15 Added check on number of output files defined vs.
-   N_OUTFILES.					TJB
-   2009-Feb-09 Sets PRT_SNOW_BAND to FALSE if N_OUTFILES has been
-   specified.					TJB
-   2009-Mar-15 Added default values for format, typestr, and
-   multstr, so that they can be omitted from global
-   param file.					TJB
-   **********************************************************************/ {
   extern option_struct options;
 
-  int outvarnum;
-
-  outvarnum = 0;
-
-  // WF!!
   options.Noutfiles = 1;
   *out_data_files = (out_data_file_struct *) calloc(options.Noutfiles, sizeof (out_data_file_struct));
 
   init_output_list(out_data, FALSE, (char*) "%.4f", OUT_TYPE_FLOAT, 1);
-  // PRT_SNOW_BAND is ignored if N_OUTFILES has been specified
-  options.PRT_SNOW_BAND = FALSE;
-  //
 
   /** Find parameters **/
   (*out_data_files)[0].nvars = (int)list["nOut"];
   (*out_data_files)[0].varid = (int *) calloc((*out_data_files)[0].nvars, sizeof (int));
-  outvarnum = 0;
 
-  Rcpp::CharacterVector outNames =list["outNames"];
+  Rcpp::CharacterVector outNames = list["outNames"];
   for(int i=0;i<(int)list["nOut"];i++) {
     if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) outNames[i], i, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }
   }
+
   // if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) "OUT_PREC", 0, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }
   // if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) "OUT_RAINF", 1, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }
   // if (set_output_var((*out_data_files), TRUE, 0, out_data, (char*) "OUT_SNOWF", 2, (char*) "*", OUT_TYPE_DEFAULT, 0) != 0) { nrerror((char*) "Error in global param file: Invalid output variable specification."); }

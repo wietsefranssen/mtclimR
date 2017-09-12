@@ -312,24 +312,6 @@ extern int NF;			/* array index loop counter limit for atmos
 /***** Data Structures *****/
 
 typedef struct {
-  char  forcing[MAXSTRING];  /* atmospheric forcing data file names */
-  char  f_path_pfx[MAXSTRING];  /* path and prefix for atmospheric forcing data file names */
-  char  global[MAXSTRING];      /* global control file name */
-  char  init_state[MAXSTRING];  /* initial model state file name */
-  char  lakeparam[MAXSTRING];   /* lake model constants file */
-  char  result_dir[MAXSTRING];  /* directory where results will be written */
-  char  snowband[MAXSTRING];    /* snow band parameter file name */
-  char  soil[MAXSTRING];        /* soil parameter file name, or name of
-				   file that has a list of all aoil
-				   ARC/INFO files */
-  char  soil_dir[MAXSTRING];    /* directory from which to read ARC/INFO
-				   soil files */
-  char  statefile[MAXSTRING];   /* name of file in which to store model state */
-  char  veg[MAXSTRING];         /* vegetation grid coverage file */
-  char  veglib[MAXSTRING];      /* vegetation parameter library file */
-} filenames_struct;
-
-typedef struct {
 
   // simulation modes
   int    AboveTreelineVeg; /* Default veg type to use above treeline;

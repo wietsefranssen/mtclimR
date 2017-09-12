@@ -1267,13 +1267,4 @@ void initialize_atmos(atmos_data_struct        *atmos,
       free(forcing_data[i]);
   free(forcing_data);
 
-//  for (type=0; type<N_FORCING_TYPES; type++) {
-//    free((char *)local_forcing_data[type]);
-//  }
-//  free((char *)local_forcing_data);
-
-  // If OUTPUT_FORCE is set to TRUE in user_def.h then the full
-  // forcing data array is dumped into a new set of files.
-  // write_forcing_toScreen(atmos, global_param.nrecs, out_data_files, out_data);
-
 }

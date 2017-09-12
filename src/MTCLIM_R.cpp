@@ -1,7 +1,6 @@
 #include "Rcpp.h"        // R memory io
 #include "Rdefines.h"        // R memory io
 #include "Rmath.h"    // R math functions
-// #include "includeWF.h"
 #include "vicNl.h"
 
 global_param_struct global_param;
@@ -37,10 +36,7 @@ List mtclimRun(List forcing_dataR, List settings) {
   // global_param.nrecs = nrecs;
   /** Set up output data structures **/
   out_data = create_output_list();
-  out_data_files = set_output_defaults(out_data);
-
   parse_output_info_R(&out_data_files, out_data, settings);
-
 
   /** Make Date Data Structure **/
   dmy = make_dmy(&global_param);

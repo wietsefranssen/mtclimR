@@ -186,11 +186,6 @@ List mtclimRun(List forcing_dataR, List settings) {
     out_dataR[out_data[out_data_files[0].varid[var_idx]].varname] = outVectorR;
   }
 
-  List outListR;
-
-  outListR["forcing_data"] = forcing_dataR;
-  outListR["out_data"] = out_dataR;
-
   ///// FREE
 //  for(int i=0;i<N_FORCING_TYPES;i++) {
 //    if (param_set.TYPE[i].SUPPLIED) {
@@ -219,5 +214,6 @@ List mtclimRun(List forcing_dataR, List settings) {
   }
   free(out_dataAllRecs);
 
-  return outListR;
+  return List::create(Named("forcing_data") = forcing_dataR,
+                      Named("out_data") = out_dataR);
 }

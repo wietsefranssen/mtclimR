@@ -205,7 +205,7 @@ List mtclimRun(List forcing_dataR, List settings) {
 
   for(int i=0;i<N_FORCING_TYPES;i++) {
 //    if (param_set.TYPE[i].SUPPLIED) {
-    if (forcing_data[i] != NULL)
+    if (forcing_data[i] != NULL) {
       free((char*)forcing_data[i]);
     }
   }
@@ -217,7 +217,7 @@ List mtclimRun(List forcing_dataR, List settings) {
   free_out_data_files(&out_data_files);
 
   for(int i=0;i<out_data_files[0].nvars;i++) {
-    if (out_dataAllRecs[i] != NULL)
+    if (out_dataAllRecs[i] != NULL) {
       free(out_dataAllRecs[i]);
     }
   }

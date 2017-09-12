@@ -1256,7 +1256,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
   free((char *)dmy_local);
 
   for (type=0; type<N_FORCING_TYPES; type++) {
-    if (local_forcing_data[i] != NULL)
+    if (local_forcing_data[i] != NULL) {
       free(local_forcing_data[type]);
     }
   }

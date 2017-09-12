@@ -173,10 +173,10 @@ List mtclimRun(List forcing_dataR, List settings) {
   }
 
   List out_dataR;
+  NumericVector outVectorR(global_param.nrecs);
   // for (int var_idx = 0; var_idx < 1; var_idx++) {
   for (int var_idx = 0; var_idx < out_data_files[0].nvars; var_idx++) {
     // Loop over this variable's elements
-    NumericVector outVectorR(global_param.nrecs);
     for (int elem_idx = 0; elem_idx < out_data[out_data_files[0].varid[var_idx]].nelem; elem_idx++) {
       for ( rec = 0; rec < global_param.nrecs; rec++ ) {
         outVectorR[rec] = out_dataAllRecs[var_idx][rec];
@@ -185,22 +185,6 @@ List mtclimRun(List forcing_dataR, List settings) {
     // printf("%f ",  outVectorR[0]);
     out_dataR[out_data[out_data_files[0].varid[var_idx]].varname] = outVectorR;
   }
-
-  ///// FREE
-//  for(int i=0;i<N_FORCING_TYPES;i++) {
-//    if (param_set.TYPE[i].SUPPLIED) {
-//      free(forcing_data[i]);
-//    }
-//  }
-//  free(forcing_data);
-
-//  for(int i=0;i<N_FORCING_TYPES;i++) {
-////    if (param_set.TYPE[i].SUPPLIED) {
-//    if (forcing_data[i] != NULL) {
-//      free((char*)forcing_data[i]);
-//    }
-//  }
-//  free((char*)forcing_data);
 
   free_dmy(&dmy);
   free_atmos(global_param.nrecs, &atmos);

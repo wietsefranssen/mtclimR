@@ -1262,6 +1262,11 @@ void initialize_atmos(atmos_data_struct        *atmos,
   }
   free(local_forcing_data);
 
+    for(i=0;i<N_FORCING_TYPES;i++) 
+      if (param_set.TYPE[i].SUPPLIED) 
+        free((char *)forcing_data[i]);
+    free((char *)forcing_data);
+
 //  for (type=0; type<N_FORCING_TYPES; type++) {
 //    free((char *)local_forcing_data[type]);
 //  }

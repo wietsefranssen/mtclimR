@@ -203,14 +203,14 @@ List mtclimRun(List forcing_dataR, List settings) {
 //  }
 //  free(forcing_data);
 
-  for(int i=0;i<N_FORCING_TYPES;i++) {
-//    if (param_set.TYPE[i].SUPPLIED) {
-    if (forcing_data[i] != NULL) {
-      free((char*)forcing_data[i]);
-    }
-  }
-  free((char*)forcing_data);
-  
+//  for(int i=0;i<N_FORCING_TYPES;i++) {
+////    if (param_set.TYPE[i].SUPPLIED) {
+//    if (forcing_data[i] != NULL) {
+//      free((char*)forcing_data[i]);
+//    }
+//  }
+//  free((char*)forcing_data);
+
   free_dmy(&dmy);
   free_atmos(global_param.nrecs, &atmos);
   free_out_data(&out_data);
@@ -225,30 +225,3 @@ List mtclimRun(List forcing_dataR, List settings) {
 
   return outListR;
 }
-
-// void free_forcing_data(out_data_struct **forcing_data) {
-//   /*************************************************************
-//    free_out_data()      Ted Bohn     April 19, 2007
-//
-//    This routine frees the memory in the out_data array.
-//
-//    *************************************************************/
-//
-//   int varid;
-//   for(int i=0;i<N_FORCING_TYPES;i++) {
-//     if (param_set.TYPE[i].SUPPLIED) {
-//       free((char*)(*forcing_data)[i]);
-//     }
-//   }
-//   // for (varid=0; varid<N_OUTVAR_TYPES; varid++) {
-//   //   free((char*)(*forcing_data)[varid]);
-//   // }
-//   free((char*)(*forcing_data));
-
-// extern "C" {
-//   void testWFR() {
-//     testWF();
-//   }
-// }
-//
-

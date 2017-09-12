@@ -15,9 +15,9 @@ print(paste("nCores: ", nCores))
 settings <- initSettings(startdate = "1950-01-01",
                          enddate = "1950-1-31",
                          outstep = 6,
-                         # lonlatbox = c(92.25, 110.25, 7.25, 36.25))
+                         lonlatbox = c(92.25, 110.25, 7.25, 36.25))
                          # lonlatbox = c(100.75, 102.25, 32.25, 36.25))#,
-lonlatbox = c(-179.75, 179.75, -89.75, 89.75))
+#lonlatbox = c(-179.75, 179.75, -89.75, 89.75))
 
 ## INIT INPUT FILES/VARS
 settings <- setInputVars(settings,list(

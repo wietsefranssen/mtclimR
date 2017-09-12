@@ -356,8 +356,8 @@ void free_out_data_files(out_data_file_struct **out_data_files) {
 *************************************************************/
   extern option_struct options;
  
-    free((char*)(*out_data_files)->varid);
-  free((char*)(*out_data_files));
+    free((*out_data_files)->varid);
+  free((*out_data_files));
 
 }
 
@@ -372,10 +372,10 @@ void free_out_data(out_data_struct **out_data) {
   int varid;
 
   for (varid=0; varid<N_OUTVAR_TYPES; varid++) {
-    free((char*)(*out_data)[varid].data);
-    free((char*)(*out_data)[varid].aggdata);
+    free((*out_data)[varid].data);
+    free((*out_data)[varid].aggdata);
   }
-  free((char*)(*out_data));
+  free((*out_data));
 
 }
 

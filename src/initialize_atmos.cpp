@@ -1253,7 +1253,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
   free(tskc);
   free(daily_vp);
 
-  free((char *)dmy_local);
+  free(dmy_local);
 
   for (type=0; type<N_FORCING_TYPES; type++) {
     if (local_forcing_data[i] != NULL) {
@@ -1262,10 +1262,10 @@ void initialize_atmos(atmos_data_struct        *atmos,
   }
   free(local_forcing_data);
 
-    for(i=0;i<N_FORCING_TYPES;i++) 
-      if (param_set.TYPE[i].SUPPLIED) 
-        free((char *)forcing_data[i]);
-    free((char *)forcing_data);
+  for(i=0;i<N_FORCING_TYPES;i++) 
+    if (param_set.TYPE[i].SUPPLIED) 
+      free(forcing_data[i]);
+  free(forcing_data);
 
 //  for (type=0; type<N_FORCING_TYPES; type++) {
 //    free((char *)local_forcing_data[type]);

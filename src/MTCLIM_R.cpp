@@ -185,17 +185,18 @@ List mtclimRun(List forcing_dataR, List settings) {
     out_dataR[out_data[out_data_files[0].varid[var_idx]].varname] = outVectorR;
   }
 
-  free_dmy(&dmy);
-  free_atmos(global_param.nrecs, &atmos);
-  free_out_data(&out_data);
-  free_out_data_files(&out_data_files);
 
+  printf("out_data_files[0].nvars: %d: \n",(int)out_data_files[0].nvars);
   for(int i=0;i<out_data_files[0].nvars;i++) {
     if (out_dataAllRecs[i] != NULL) {
       free(out_dataAllRecs[i]);
     }
   }
   free(out_dataAllRecs);
+  free_dmy(&dmy);
+  free_atmos(global_param.nrecs, &atmos);
+  free_out_data(&out_data);
+  free_out_data_files(&out_data_files);
 
   return List::create(Named("out_data") = out_dataR);
 }

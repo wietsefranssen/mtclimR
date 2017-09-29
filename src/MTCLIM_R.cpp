@@ -79,12 +79,14 @@ List mtclimRun(List forcing_dataR, List settings) {
                          sizeof(double));
     }
   }
+  int     Ndays;
+  Ndays = (global_param.nrecs * global_param.dt) / 24;
 
   // Retreive forcing data from R list
   for(int i=0;i<N_FORCING_TYPES;i++) {
     if (param_set.TYPE[i].SUPPLIED) {
       NumericVector resid = as<NumericVector>(forcing_dataR[i]);
-      for(int t=0;t<(global_param.nrecs * NF);t++) {
+      for(int t=0;t<(Ndays * NF);t++) {
         forcing_data[i][t] = resid[t];
       }
     }
@@ -102,9 +104,6 @@ List mtclimRun(List forcing_dataR, List settings) {
   /**************************************************
    Output to R
    **************************************************/
-  // NumericVector resid=forcing_dataR[2];
-  // resid[3]=9999;
-  // forcing_dataR[2]=resid;
 
   int                 rec, i, j, v;
   int                 dummy_dt;
@@ -198,6 +197,5 @@ List mtclimRun(List forcing_dataR, List settings) {
   }
   free(out_dataAllRecs);
 
-  return List::create(Named("forcing_data") = forcing_dataR,
-                      Named("out_data") = out_dataR);
+  return List::create(Named("out_data") = out_dataR);
 }

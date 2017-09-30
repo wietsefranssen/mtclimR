@@ -1,6 +1,7 @@
 # library(devtools)
 # install_git("https://github.com/wietsefranssen/mtclimR.git", branch="mtclimMultiCore")
 # install_git("https://github.com/wietsefranssen/mtclimR.git", branch="mtclimOpenMPParts")
+#VALGRIND INFO: http://kevinushey.github.io/blog/2015/04/05/debugging-with-valgrind/
 rm (list = ls())
 library(WFRTools)
 library(doParallel)
@@ -197,8 +198,14 @@ for (iPart in 1:length(parts)) {
       if (!is.na(elevation$Data[iy,ix])) {
         ## ADD TO OUTPUT ARRAY
         for (iVar in 1:length(settings$outputVars)) {
-          #      if (!is.na(output[[ix]][[iVar]][1])) {
-          toNetCDFData[[iVar]][ix,iy,] <- output[[ix]][[iVar]]
+          # #      if (!is.na(output[[ix]][[iVar]][1])) {
+          # # toNetCDFData[[iVar]][ix,iy,] <- output[[ix]][[iVar]]
+          # # format(output[[1]][((varr*settings$intern$nrec_out)+1):((varr+1)*settings$intern$nrec_out)], scientific=FALSE)
+          # varr<-iVar-1
+          # toNetCDFData[[iVar]][ix,iy,] <- output[[ix]][((varr*settings$intern$nrec_out)+1):((varr+1)*settings$intern$nrec_out)]
+          iStart <- ((iVar-1)*settings$intern$nrec_out)+1
+          iEnd <- iVar*settings$intern$nrec_out
+          toNetCDFData[[iVar]][ix,iy,] <- output[[ix]][iStart:iEnd]
           #  }
         }
       }

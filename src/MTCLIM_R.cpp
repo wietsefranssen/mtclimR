@@ -45,8 +45,8 @@ List mtclimRun(List forcing_dataR, List settings) {
   alloc_atmos(global_param.nrecs, &atmos);
 
   /************************************
-  Run Model for all Active Grid Cells
-  ************************************/
+   Run Model for all Active Grid Cells
+   ************************************/
   cell_cnt = 0;
 
   soil_con.time_zone_lng = -30;
@@ -111,8 +111,8 @@ List mtclimRun(List forcing_dataR, List settings) {
   double              **out_dataAllRecs;
   out_dataAllRecs = (double **)calloc(out_data_files[0].nvars,sizeof(double*));
   for(int i=0;i<out_data_files[0].nvars;i++) {
-      out_dataAllRecs[i] = (double *)calloc((global_param.nrecs),
-                         sizeof(double));
+    out_dataAllRecs[i] = (double *)calloc((global_param.nrecs),
+                          sizeof(double));
   }
 
   dt_sec = global_param.dt*SECPHOUR;
@@ -171,22 +171,16 @@ List mtclimRun(List forcing_dataR, List settings) {
     }
   }
 
-  List out_dataR;
-  NumericVector outVectorR(global_param.nrecs);
-  // for (int var_idx = 0; var_idx < 1; var_idx++) {
+  NumericVector outVectorR(global_param.nrecs * out_data_files[0].nvars);
+  i = 0;
   for (int var_idx = 0; var_idx < out_data_files[0].nvars; var_idx++) {
-    // Loop over this variable's elements
-    for (int elem_idx = 0; elem_idx < out_data[out_data_files[0].varid[var_idx]].nelem; elem_idx++) {
-      for ( rec = 0; rec < global_param.nrecs; rec++ ) {
-        outVectorR[rec] = out_dataAllRecs[var_idx][rec];
-      }
+    for ( rec = 0; rec < global_param.nrecs; rec++ ) {
+      outVectorR[i] = out_dataAllRecs[var_idx][rec];
+      i++;
     }
-    // printf("%f ",  outVectorR[0]);
-    out_dataR[out_data[out_data_files[0].varid[var_idx]].varname] = outVectorR;
   }
 
-
-  printf("out_data_files[0].nvars: %d: \n",(int)out_data_files[0].nvars);
+  // free
   for(int i=0;i<out_data_files[0].nvars;i++) {
     if (out_dataAllRecs[i] != NULL) {
       free(out_dataAllRecs[i]);
@@ -198,5 +192,5 @@ List mtclimRun(List forcing_dataR, List settings) {
   free_out_data(&out_data);
   free_out_data_files(&out_data_files);
 
-  return List::create(Named("out_data") = out_dataR);
+  return List::create(Named("out_data") = outVectorR);
 }

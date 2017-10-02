@@ -121,84 +121,116 @@ makeNetcdfOut <- function(settings, mask) {
   nc_close(ncid)
 }
 
+
+calcMinNParts <- function(settings, mask, memMax) {
+  BYTE<-8
+
+  memMax <- memMax * 1024^3
+
+  ## Calculate memory needed:
+  memInput <- length(mask$Data) * settings$intern$nrec_in * length(settings$inputVars) * BYTE
+  memOutput <- length(mask$Data) * settings$intern$nrec_out * length(settings$outputVars) * BYTE
+  memExtra <- length(mask$Data) * 100 * BYTE
+  memTotal <- (memInput + memOutput + memExtra)
+
+  minNParts <- ceiling(memTotal / memMax) #
+  # maxNParts <- ceiling(memTotal / memMax * 2) #*2 for safety
+
+  print(sprintf("Total memory: %s (Max mem: %s), minimum number of parts: %d", hsize(memTotal), hsize(memMax), minNParts))
+
+  return(minNParts)
+}
+
 setSubDomains <- function(settings, mask, nPart = NULL) {
-  maxPart <- length(mask$xyCoords$y)
+  # nPart<-1
+  # mask<-elevation
+
   nCells<-length(mask$xyCoords$x)*length(mask$xyCoords$y)
-
-  if (nPart > maxPart) {
-    print(paste0("nPart (", nPart, ") is greater than maxPart (", maxPart, "), nPart is now adapted to maxPart: ", maxPart))
-    print(paste0("Be warned that this can case memory issues!"))
-    nPart <- maxPart
-  }
-
   nActive <- length(mask$Data[!is.na(mask$Data)])
-  print(paste0("Total cells: ", nCells, ", Active Cells: ", nActive, ", nParts: ", nPart))
 
-  partSize <- ceiling(nCells/nPart)
-  partSize <- ceiling(partSize/length(mask$xyCoords$x)) * length(mask$xyCoords$x)
+  if (nPart == 1) {
+    part <- list(sx = 1,
+                 nx = length(mask$xyCoords$x),
+                 sy = 1,
+                 ny = length(mask$xyCoords$y),
+                 slon = min(mask$xyCoords$x),
+                 elon = max(mask$xyCoords$x),
+                 slat = min(mask$xyCoords$y),
+                 elat = max(mask$xyCoords$y))
+    parts <- list(part)[rep(1,nPart)]
+  } else {
 
-  part <- list(sx = 1,
-               nx = length(mask$xyCoords$x),
-               sy = NULL,
-               ny = partSize/length(mask$xyCoords$x),
-               slon = min(mask$xyCoords$x),
-               elon = max(mask$xyCoords$x),
-               slat = NULL,
-               elat = NULL)
-  parts <- list(part)[rep(1,nPart)]
+    nxxx<-length(mask$xyCoords$x)
+    nyyy<-length(mask$xyCoords$y)
+    lengthxy<-ceiling(sqrt(nCells/nPart))
+    parts<-NULL
+    ey<-ex<-0
+    sy<-sx<-0
+    ny<-nx<-0
+    sxPrev<-syPrev<-1
+    i<-1
+    while(ey < nyyy) {
+      while(ex < nxxx) {
+        sx[[i]]<-sxPrev
+        sy[[i]]<-syPrev
+        nx[[i]]<-lengthxy
+        ny[[i]]<-lengthxy
 
-  for (iPart in 1:(nPart)) {
-    parts[[iPart]]$sy <- (iPart -1) * (partSize/length(mask$xyCoords$x)) +1
-    parts[[iPart]]$slat <- mask$xyCoords$y[parts[[iPart]]$sy]
-    parts[[iPart]]$elat <- mask$xyCoords$y[iPart * (partSize/length(mask$xyCoords$x))]
+        ex<-sxPrev+lengthxy-1
+        sxPrev<-sx[[i]]+lengthxy
+        i<-i+1
+      }
+      nx[[i-1]]<-nxxx-sx[[i-1]]+1
+      ey<-syPrev+lengthxy-1
+      syPrev<-syPrev+lengthxy
+      ex<-1
+      sxPrev<-1
+    }
+    nPart<-length(sy)
+
+    for (iPart in 1:nPart) {
+      if ((nyyy-(sy[[iPart]])) < lengthxy) {
+        ny[[iPart]]<-nyyy- sy[[iPart]]+1
+      }
+      if ((nxxx-(sx[[iPart]])) < lengthxy) {
+        nx[[iPart]]<-nxxx- sx[[iPart]]+1
+      }
+    }
+    part <- list(sx = 1,
+                 nx = 1,
+                 sy = NULL,
+                 ny = NULL,
+                 slon = min(mask$xyCoords$x),
+                 elon = max(mask$xyCoords$x),
+                 slat = NULL,
+                 elat = NULL)
+    parts <- list(part)[rep(1,nPart)]
+
+    ## The devision
+    for (iPart in 1:nPart) {
+      endx<- sx[iPart]+nx[iPart]-1
+      endy<- sy[iPart]+ny[iPart]-1
+    }
+
+    for (iPart in 1:(nPart)) {
+      endx<- sx[iPart]+nx[iPart]-1
+      endy<- sy[iPart]+ny[iPart]-1
+      parts[[iPart]]$sx <- sx[iPart]
+      parts[[iPart]]$sy <- sy[iPart]
+      parts[[iPart]]$slon <- mask$xyCoords$x[parts[[iPart]]$sx]
+      parts[[iPart]]$elon <- mask$xyCoords$x[endx]
+      parts[[iPart]]$slat <- mask$xyCoords$y[parts[[iPart]]$sy]
+      parts[[iPart]]$elat <- mask$xyCoords$y[endy]
+      parts[[iPart]]$nx <- nx[iPart]
+      parts[[iPart]]$ny <- ny[iPart]
+    }
   }
-  parts[[nPart]]$elat <- mask$xyCoords$y[length(mask$xyCoords$y)]
-  parts[[nPart]]$ny <- (length(mask$xyCoords$y) - parts[[nPart]]$sy) + 1
+
+  print(paste0("Total cells: ", nCells, ", Active Cells: ", nActive, ", nParts: ", nPart))
 
   return(parts)
 }
 
-setSubDomains_old <- function(settings, mask, partSize = NULL) {
-  # mask <- elevation
-  # partSize <- 50
-  # partBased <- "lon"
-  # partSize <-NULL
-  nCells<-length(mask$xyCoords$x)*length(mask$xyCoords$y)
-
-  if (is.null(partSize)) {
-    print(paste0("Partsize not defined, so using max: ", nCells, " (only 1 part)"))
-    partSize <- nCells
-  }
-  partSizeOld <- partSize
-  partSize <- ceiling(partSize/length(mask$xyCoords$x)) * length(mask$xyCoords$x)
-  if (partSizeOld != partSize) {
-    print(paste0("partsize should be a multiplication of nx(", length(mask$xyCoords$x),"), so changed to: ", partSize))
-  }
-
-  nActive <- length(mask$Data[!is.na(mask$Data)])
-  nPart<-ceiling(nCells/partSize)
-  print(paste0("Total cells: ", nCells, ", Active Cells: ", nActive, ", nParts: ", nPart))
-
-  part <- list(sx = 1,
-               nx = length(mask$xyCoords$x),
-               sy = NULL,
-               ny = partSize/length(mask$xyCoords$x),
-               slon = min(mask$xyCoords$x),
-               elon = max(mask$xyCoords$x),
-               slat = NULL,
-               elat = NULL)
-  parts <- list(part)[rep(1,nPart)]
-
-  for (iPart in 1:(nPart)) {
-    parts[[iPart]]$sy <- (iPart -1) * (partSize/length(mask$xyCoords$x)) +1
-    parts[[iPart]]$slat <- mask$xyCoords$y[parts[[iPart]]$sy]
-    parts[[iPart]]$elat <- mask$xyCoords$y[iPart * (partSize/length(mask$xyCoords$x))]
-  }
-  parts[[nPart]]$elat <- mask$xyCoords$y[length(mask$xyCoords$y)]
-  parts[[nPart]]$ny <- (length(mask$xyCoords$y) - parts[[nPart]]$sy) + 1
-
-  return(parts)
-}
 readForcing <- function(settings, iPart) {
   forcing_dataR <- list()
   for (i in 1:length(settings$inputVars)) {

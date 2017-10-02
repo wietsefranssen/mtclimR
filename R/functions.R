@@ -1,4 +1,3 @@
-#library(pbdNCDF4)
 library(ncdf4)
 
 initSettings <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatbox = NULL, outfile = "output.nc") {
@@ -289,9 +288,6 @@ selectForcingCell <-function(settings, forcing_dataRTotal, ix, iy) {
   return(forcing_dataR)
 }
 
-
-
-
 initParams <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatbox = NULL) {
   intern <- list (
     lonlatboxindex = NULL,
@@ -426,6 +422,7 @@ readForcingNetCDF <- function(variableInfo, params) {
 
   return(forcing_dataR)
 }
+
 readElevationNetCDF <- function(elevation, params) {
   ## Read data
   nx <- params$intern$nx

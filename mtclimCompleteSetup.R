@@ -4,12 +4,13 @@
 #VALGRIND INFO: http://kevinushey.github.io/blog/2015/04/05/debugging-with-valgrind/
 rm (list = ls())
 library(WFRTools)
-library(doParallel, warn.conflicts = FALSE)
-library(R.utils, warn.conflicts = FALSE)
-library(mtclimR, warn.conflicts = FALSE)
+# library(doParallel, warn.conflicts = FALSE)
+# library(R.utils, warn.conflicts = FALSE)
+# library(mtclimR, warn.conflicts = FALSE)
+library(mtclimR)
 
 nCores <- 1
-memMax <- 0.000040 # in gb
+memMax <- 0.0040 # in gb
 
 registerDoParallel(cores=nCores)
 start.time.total <- Sys.time()
@@ -20,7 +21,7 @@ settings <- initSettings(startdate = "1950-01-01",
                          enddate = "1950-1-31",
                          outstep = 6,
                          lonlatbox = c(108.25, 110.25, 35.25, 36.25))
-# lonlatbox = c(92.25, 110.25, 7.25, 36.25))
+                         # lonlatbox = c(92.25, 110.25, 7.25, 36.25))
 # lonlatbox = c(100.75, 102.25, 32.25, 36.25))#,
 #lonlatbox = c(-179.75, 179.75, -89.75, 89.75))
 
@@ -31,7 +32,6 @@ settings <- setInputVars(settings,list(
   tasmax     = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "tasmaxAdjust",    vicIndex = 16),
   wind       = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "windAdjust",      vicIndex = 20)
 ))
-settings$elevation <- list(ncFileName = "./data/domain_elev_Mekong.nc", ncName = "elev")
 settings$elevation <- list(ncFileName = "./data/WFDEI-elevation.nc", ncName = "elevation")
 
 ## INIT OUTPUT FILES/VARS
@@ -41,10 +41,10 @@ settings$outputVars <- list(
   shortwave  = list(VICName = "OUT_SHORTWAVE",  units = "W m-2"),
   longwave   = list(VICName = "OUT_LONGWAVE",   units = "W m-2"),
   pressure   = list(VICName = "OUT_PRESSURE",   units = "kPa"),
-  #  qair       = list(VICName = "OUT_QAIR",       units = "kg kg-1"),
+  qair       = list(VICName = "OUT_QAIR",       units = "kg kg-1"),
   vp         = list(VICName = "OUT_VP",         units = "kPa"),
-  #  rel_humid  = list(VICName = "OUT_REL_HUMID",  units = "fraction"),
-  #  density    = list(VICName = "OUT_DENSITY",    units = "kg m-3"),
+  rel_humid  = list(VICName = "OUT_REL_HUMID",  units = "fraction"),
+  density    = list(VICName = "OUT_DENSITY",    units = "kg m-3"),
   wind       = list(VICName = "OUT_WIND",       units = "m s-1")
 )
 
@@ -53,12 +53,14 @@ settings$mtclim$nOut <- length(settings$outputVars)
 for (i in 1:length(settings$outputVars)) {
   settings$mtclim$outNames[i]<-settings$outputVars[[i]]$VICName
 }
+
 ## LOAD MASK/ELEVATION
 elevation <- ncLoad(file = settings$elevation$ncFileName,
                     varName = settings$elevation$ncName,
                     lonlatbox = settings$lonlatbox)
 mask<-elevation
 
+profile<-NULL
 ## makeOutputNetCDF
 makeNetcdfOut(settings, elevation)
 
@@ -77,7 +79,7 @@ for (iPart in 1:length(parts)) {
                       lonlatbox = settings$lonlatbox)
 
   ## Print part info
-  cat(sprintf("> START Running part:%3.0d/%.0d, nx: %.0d, ny: %.0d\n", iPart, nPart, part$nx, part$ny))
+  cat(sprintf("\n> START Running part:%3.0d/%.0d, nx: %.0d, ny: %.0d\n", iPart, nPart, part$nx, part$ny))
 
   ## DEFINE OUTPUT ARRAY
   el <- array(NA, dim = c(part$nx, part$ny, settings$intern$nrec_out))
@@ -85,13 +87,15 @@ for (iPart in 1:length(parts)) {
   rm(el)
 
   ## LOAD WHOLE DOMAIN FROM NETCDF
-  start.time.read <- Sys.time()
+  profile$start.time.read <- Sys.time()
   forcing_dataRTotal <- readForcingAll(part, settings, elevation)
+  profile$end.time.read <- Sys.time()
 
   ## Init progressbar
   pb <- txtProgressBar(min = 0, max = part$ny, initial = 0, char = "=",
                        width = NA, title, label, style = 3, file = "")
 
+  profile$start.time.run <- Sys.time()
   ## CELL LOOP
   for (iy in 1:part$ny) {
     output<-foreach(ix = 1:part$nx) %dopar% {
@@ -125,8 +129,10 @@ for (iPart in 1:length(parts)) {
   # Close ProgressBar
   close(pb)
 
+  profile$end.time.run <- Sys.time()
+
   ## ADD OUTPUT TO NETCDF
-  start.time.write <- Sys.time()
+  profile$start.time.write <- Sys.time()
   ncid <- nc_open(settings$outfile, write = TRUE)
   for (iVar in 1:length(settings$outputVars))
   {
@@ -142,16 +148,19 @@ for (iPart in 1:length(parts)) {
     )
   }
   nc_close(ncid)
+  profile$end.time.write <- Sys.time()
 
   ## Print info about part
-  cat(sprintf("  Read time: %6.1f min, size: %s / ",
-              as.numeric(Sys.time() - start.time.read, units = "mins"),
+  cat(sprintf("  Times (read/run/write/total): %.1f/%.1f/%.1f/%.1f minutes",
+              as.numeric(profile$end.time.read - profile$start.time.read, units = "mins"),
+              as.numeric(profile$end.time.run - profile$start.time.run, units = "mins"),
+              as.numeric(profile$end.time.write - profile$start.time.write, units = "mins"),
+              as.numeric(profile$end.time.write - profile$start.time.read, units = "mins"),
               format(object.size(forcing_dataRTotal), units = "auto")))
-  cat(sprintf("Write time: %6.1f min, size: %s \n\n",
-              as.numeric(Sys.time() - start.time.write, units = "mins"),
+  cat(sprintf("         Sizes (read/write): %s/%s\n",
+              format(object.size(forcing_dataRTotal), units = "auto"),
               format(object.size(toNetCDFData), units = "auto")))
 
 }
 
-print(sprintf("write: %6.1f min",as.numeric(Sys.time() - start.time.write, units = "mins")))
-print(sprintf("total: %6.1f min",as.numeric(Sys.time() - start.time.total, units = "mins")))
+cat(sprintf("\nFinished in %.1f minutes\n",as.numeric(Sys.time() - start.time.total, units = "mins")))

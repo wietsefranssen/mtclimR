@@ -95,7 +95,7 @@ makeNetcdfOut <- function(settings, mask) {
   }
 
   ## SAVE AS NC-DATA
-  print(paste0("Writing: ", settings$outfile))
+  print(paste0("Output file: ", settings$outfile))
   # ncid <- nc_create_par(settings$outfile, dataAllVars,force_v4=TRUE)
   ncid <- nc_create(settings$outfile, dataAllVars, force_v4=TRUE)
 
@@ -135,7 +135,7 @@ calcMinNParts <- function(settings, mask, memMax) {
   minNParts <- ceiling(memTotal / memMax) #
   # maxNParts <- ceiling(memTotal / memMax * 2) #*2 for safety
 
-  print(sprintf("Total memory: %s (Max mem: %s), minimum number of parts: %d", hsize(memTotal), hsize(memMax), minNParts))
+  print(sprintf("Memory needed: %s (Max mem: %s), minimum number of parts: %d", hsize(memTotal), hsize(memMax), minNParts))
 
   return(minNParts)
 }

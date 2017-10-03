@@ -9,5 +9,5 @@ Description: More about what it does (maybe more than one line)
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp (>= 0.12.9), R.utils, doParallel
+Imports: Rcpp (>= 0.12.9), R.utils, doParallel, 
 LinkingTo: Rcpp

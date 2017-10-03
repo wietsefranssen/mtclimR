@@ -17,12 +17,12 @@ settings$system$maxMem <- 0.0040 # in gb
 
 ## INIT INPUT FILES/VARS
 settings <- setInputVars(settings,list(
-  pr         = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "prAdjust",        vicIndex = 9,   alma = FALSE),
-  tasmin     = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "tasminAdjust",    vicIndex = 17),
-  tasmax     = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "tasmaxAdjust",    vicIndex = 16),
-  wind       = list(ncFileName = "./data/merged_Mekong.nc",        ncName = "windAdjust",      vicIndex = 20)
+  pr         = list(ncFileName = "./data/pr_Mekong.nc4",        ncName = "pr",        vicIndex = 9,   alma = FALSE),
+  tasmin     = list(ncFileName = "./data/tasmin_Mekong.nc4",    ncName = "tasmin",    vicIndex = 17),
+  tasmax     = list(ncFileName = "./data/tasmax_Mekong.nc4",    ncName = "tasmax",    vicIndex = 16),
+  wind       = list(ncFileName = "./data/wind_Mekong.nc4",      ncName = "wind",      vicIndex = 20)
 ))
-settings$elevation <- list(ncFileName = "./data/WFDEI-elevation.nc", ncName = "elevation")
+settings$elevation <- list(ncFileName = "./data/elevation_Mekong.nc", ncName = "elevation")
 
 ## INIT OUTPUT FILES/VARS
 settings$outputVars <- list(
@@ -38,11 +38,5 @@ settings$outputVars <- list(
   wind       = list(VICName = "OUT_WIND",       units = "m s-1")
 )
 
-## Set outvars in settings
-settings$mtclim$nOut <- length(settings$outputVars)
-for (i in 1:length(settings$outputVars)) {
-  settings$mtclim$outNames[i]<-settings$outputVars[[i]]$VICName
-}
 
-rm(i)
 main_netcdf(settings)

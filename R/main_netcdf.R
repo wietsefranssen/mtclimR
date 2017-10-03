@@ -1,8 +1,16 @@
 main_netcdf<-function(settings = settings) {
-
-  registerDoParallel(cores=settings$system$nCores)
+  ## Start profiler
   start.time.total <- Sys.time()
+
+  ## Register nr of cores
   print(paste("nCores: ", settings$system$nCores))
+  registerDoParallel(cores=settings$system$nCores)
+
+  ## Set outvars in settings
+  settings$mtclim$nOut <- length(settings$outputVars)
+  for (i in 1:length(settings$outputVars)) {
+    settings$mtclim$outNames[i]<-settings$outputVars[[i]]$VICName
+  }
 
   ## LOAD MASK/ELEVATION
   elevation <- ncLoad(file = settings$elevation$ncFileName,

@@ -1,7 +1,7 @@
 initSettings <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatbox = NULL, outfile = "output.nc") {
 
   system <- list (
-    nCores = 1,
+    nCores = 2,
     maxMem = 8  # in Gb
   );
   intern <- list (

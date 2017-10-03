@@ -1,5 +1,9 @@
 initSettings <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatbox = NULL, outfile = "output.nc") {
 
+  system <- list (
+    nCores = 1,
+    maxMem = 8  # in Gb
+  );
   intern <- list (
     nrec_in = NULL,
     nrec_out = NULL
@@ -25,7 +29,8 @@ initSettings <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatb
     outstep = outstep,
     outfile = outfile,
     mtclim = mtclim,
-    intern = intern
+    intern = intern,
+    system = system
   )
 
   settings$intern$nrec_in = as.numeric((settings$enddate - settings$startdate) +1)
@@ -119,10 +124,10 @@ makeNetcdfOut <- function(settings, mask) {
 }
 
 
-calcMinNParts <- function(settings, mask, memMax) {
+calcMinNParts <- function(settings, mask) {
   BYTE<-8
 
-  memMax <- memMax * 1024^3
+  maxMem <- settings$system$maxMem * 1024^3
 
   ## Calculate memory needed:
   memInput <- length(mask$Data) * settings$intern$nrec_in * length(settings$inputVars) * BYTE
@@ -130,10 +135,10 @@ calcMinNParts <- function(settings, mask, memMax) {
   memExtra <- length(mask$Data) * 100 * BYTE
   memTotal <- (memInput + memOutput + memExtra)
 
-  minNParts <- ceiling(memTotal / memMax) #
-  # maxNParts <- ceiling(memTotal / memMax * 2) #*2 for safety
+  minNParts <- ceiling(memTotal / maxMem) #
+  # maxNParts <- ceiling(memTotal / maxMem * 2) #*2 for safety
 
-  print(sprintf("Memory needed: %s (Max mem: %s), minimum number of parts: %d", hsize(memTotal), hsize(memMax), minNParts))
+  print(sprintf("Memory needed: %s (Max mem: %s), minimum number of parts: %d", hsize(memTotal), hsize(maxMem), minNParts))
 
   return(minNParts)
 }

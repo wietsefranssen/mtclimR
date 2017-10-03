@@ -1,10 +1,8 @@
-main_netcdf<-function() {
-  nCores <- 1
-  memMax <- 0.0040 # in gb
+main_netcdf<-function(settings = settings) {
 
-  registerDoParallel(cores=nCores)
+  registerDoParallel(cores=settings$system$nCores)
   start.time.total <- Sys.time()
-  print(paste("nCores: ", nCores))
+  print(paste("nCores: ", settings$system$nCores))
 
   ## LOAD MASK/ELEVATION
   elevation <- ncLoad(file = settings$elevation$ncFileName,
@@ -18,7 +16,7 @@ main_netcdf<-function() {
 
   ## Calculate minimum number of parts based on the memory in the system
   ## And make pasts list.
-  minNParts <- calcMinNParts(settings, elevation, memMax)
+  minNParts <- calcMinNParts(settings, elevation)
   parts <- setSubDomains(settings, elevation, nPart = minNParts)
   nPart <- length(parts)
 

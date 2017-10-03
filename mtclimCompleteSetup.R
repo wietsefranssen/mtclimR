@@ -1,11 +1,7 @@
 # library(devtools)
-# install_git("https://github.com/wietsefranssen/mtclimR.git", branch="mtclimOpenMPParts")
-#VALGRIND INFO: http://kevinushey.github.io/blog/2015/04/05/debugging-with-valgrind/
+# install_git("https://github.com/wietsefranssen/mtclimR.git")
 rm (list = ls())
 library(mtclimR)
-
-# nCores <- 1
-# memMax <- 0.0040 # in gb
 
 ## INIT SETTINGS
 settings <- initSettings(startdate = "1950-01-01",
@@ -15,6 +11,9 @@ settings <- initSettings(startdate = "1950-01-01",
                          # lonlatbox = c(92.25, 110.25, 7.25, 36.25))
 # lonlatbox = c(100.75, 102.25, 32.25, 36.25))#,
 #lonlatbox = c(-179.75, 179.75, -89.75, 89.75))
+
+settings$system$nCores <- 2
+settings$system$maxMem <- 0.0040 # in gb
 
 ## INIT INPUT FILES/VARS
 settings <- setInputVars(settings,list(
@@ -44,5 +43,6 @@ settings$mtclim$nOut <- length(settings$outputVars)
 for (i in 1:length(settings$outputVars)) {
   settings$mtclim$outNames[i]<-settings$outputVars[[i]]$VICName
 }
+
 rm(i)
-main_netcdf()
+main_netcdf(settings)

@@ -1,13 +1,13 @@
 Package: mtclimR
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: MTCLIM
+Version: 1.0
+Date: 2017-10-03
+Author: Wietse Franssen
+Maintainer: Wietse Franssen <wietse.franssen@wur.nl>
+Depends: Rcpp (>= 0.12.9), R (>= 3.0.0), R.utils, ncdf4, doParallel, WFRTools
+Description: Some usefull R-Functions
+License: GPL
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp (>= 0.12.9), R.utils, doParallel, 
 LinkingTo: Rcpp

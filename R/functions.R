@@ -1,5 +1,3 @@
-library(ncdf4)
-
 initSettings <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatbox = NULL, outfile = "output.nc") {
 
   intern <- list (

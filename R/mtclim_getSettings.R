@@ -1,5 +1,6 @@
 mtclim_getSettings <- function() {
-  ## INIT SETTINGS
+
+  ## Init the settings datatype
   settings <- initSettings(startdate = "1950-01-01",
                            enddate = "1950-1-31",
                            outstep = 6,
@@ -10,13 +11,15 @@ mtclim_getSettings <- function() {
   settings$system$nCores <- 2
   settings$system$maxMem <- 0.0040 # in Gb
 
+  ## Return the location of the Example NetCDF-files
   ncFileNameElevation  <- system.file("extdata", "elevation_Mekong.nc4", package = "mtclimR")
   ncFileNamePr         <- system.file("extdata", "pr_Mekong.nc4", package = "mtclimR")
   ncFileNameTasmin     <- system.file("extdata", "tasmin_Mekong.nc4", package = "mtclimR")
   ncFileNameTasmax     <- system.file("extdata", "tasmax_Mekong.nc4", package = "mtclimR")
   ncFileNameWind       <- system.file("extdata", "wind_Mekong.nc4", package = "mtclimR")
 
-  ## INIT INPUT FILES/VARS
+  ## Input variables
+  ## Comment out the ones you dont want to include
   settings <- setInputVars(settings,list(
     pr         = list(ncFileName = ncFileNamePr,        ncName = "pr",        vicIndex = 9,   alma = FALSE),
     tasmin     = list(ncFileName = ncFileNameTasmin,    ncName = "tasmin",    vicIndex = 17),
@@ -25,7 +28,8 @@ mtclim_getSettings <- function() {
   ))
   settings$elevation <- list(ncFileName = ncFileNameElevation, ncName = "elevation")
 
-  ## INIT OUTPUT FILES/VARS
+  ## Output variables
+  ## Comment out the ones you dont want to include
   settings$outputVars <- list(
     pr         = list(VICName = "OUT_PREC",       units = "mm"),
     tas        = list(VICName = "OUT_AIR_TEMP",   units = "C"),

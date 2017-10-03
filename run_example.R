@@ -6,8 +6,8 @@ library(mtclimR)
 rm(list=ls(all=TRUE))
 
 ## Fill struct with settings
-settings <- mtclim_getSettings()
-# lonlatbox = c(108.25, 110.25, 35.25, 36.25),
+sett <- mtclim_getSettings()
+sett$lonlatbox = c(108.25, 110.25, 35.25, 36.25)
 
 ## Run the main routine
-mtclim_run(settings)
+mtclim_run(sett)

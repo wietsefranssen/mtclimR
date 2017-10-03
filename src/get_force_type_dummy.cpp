@@ -3,8 +3,6 @@
 #include "vicNl.h"
 #include <string.h>
 
-static char vcid[] = "$Id$";
-
 void get_force_type_dummy(int type,
 		    int    *field) {
 

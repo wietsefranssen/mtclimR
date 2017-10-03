@@ -3,8 +3,6 @@
 #include "vicNl.h"
 #include <string.h>
 
-static char vcid[] = "$Id$";
-
 global_param_struct get_global_param_R(Rcpp::List list) {
   extern option_struct options;
   extern param_set_struct param_set;

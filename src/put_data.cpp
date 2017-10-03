@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include "vicNl.h"
 
-static char vcid[] = "$Id$";
-
 int  put_data(dist_prcp_struct  *prcp,
 	      atmos_data_struct *atmos,
               soil_con_struct   *soil_con,

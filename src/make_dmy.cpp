@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "vicNl.h"
- 
+
 #ifndef _LEAPYR
 #define LEAPYR(y) (!((y)%400) || (!((y)%4) && ((y)%100)))
 #endif
@@ -10,14 +10,14 @@ dmy_struct *make_dmy(global_param_struct *global)
 /**********************************************************************
 	make_dmy	Dag Lohmann		January 1996
 
-  This subroutine creates an array of structures that contain 
+  This subroutine creates an array of structures that contain
   information about the day, month and year of each time step.
 
   modifications:
   7-25-96  Added hour count, so that model can run on less than
            a daily time step.					KAC
-  5-17-99  Modified routine to use LEAPYR function, make use of 
-           simulation ending dates, and to skip over initial 
+  5-17-99  Modified routine to use LEAPYR function, make use of
+           simulation ending dates, and to skip over initial
 	  forcing data records so that the model can be run on
 	  subsets of more complete data records.            KAC
   8-19-99  Modified routine to estimate the number of records
@@ -29,13 +29,13 @@ dmy_struct *make_dmy(global_param_struct *global)
            number of days in February was not reset to 28 after
 	   working out number of records and before working out
 	   the number of forcing file records to skip.      KAC
-  2006-02-07 Changed indexing of line 63 (if(endday...) by 1 GCT 
+  2006-02-07 Changed indexing of line 63 (if(endday...) by 1 GCT
 **********************************************************************/
 {
   extern param_set_struct param_set;
 
   dmy_struct *temp;
-  int    hr, year, day, month, jday, ii, daymax;
+  int    hr, year, day, month, jday, ii;
   int    days[12]={31,28,31,30,31,30,31,31,30,31,30,31};
   int    endmonth, endday, endyear, skiprec, i, offset;
   int    tmpmonth, tmpday, tmpyear, tmphr, tmpjday, step;
@@ -46,10 +46,10 @@ dmy_struct *make_dmy(global_param_struct *global)
   year  = global->startyear;
   day   = global->startday;
   month = global->startmonth;
-  
+
   /** Check if user defined end date instead of number of records **/
   if(global->nrecs < 0) {
-    if((global->endyear < 0) || (global->endmonth < 0) 
+    if((global->endyear < 0) || (global->endmonth < 0)
        || (global->endday < 0)) {
       nrerror((char*) "The model global file MUST define EITHER the number of records to simulate (NRECS), or the year (ENDYEAR), month (ENDMONTH), and day (ENDDAY) of the last full simulation day");
     }
@@ -108,12 +108,12 @@ dmy_struct *make_dmy(global_param_struct *global)
   jday = day;
   if( LEAPYR(year) ) days[1] = 29;
   else days[1] = 28;
-  for ( ii = 0; ii < month-1; ii++ ) 
+  for ( ii = 0; ii < month-1; ii++ )
     jday += days[ii];
-  
+
   DONE = FALSE;
   ii   = 0;
-  
+
   while(!DONE) {
     temp[ii].hour = hr;
     temp[ii].day   = day;
@@ -138,22 +138,22 @@ dmy_struct *make_dmy(global_param_struct *global)
 	tmpjday  = tmpday;
 	if ( LEAPYR(tmpyear) ) days[1] = 29;
 	else days[1] = 28;
-	for ( ii = 0; ii < tmpmonth-1; ii++) 
+	for ( ii = 0; ii < tmpmonth-1; ii++)
 	  tmpjday += days[ii];
-	
+
 	step     = (int)(1./((float)global->dt/24.));
-	while(tmpyear < temp[0].year || 
+	while(tmpyear < temp[0].year ||
 	      (tmpyear == temp[0].year && tmpjday < temp[0].day_in_year)) {
-	  
+
 	  get_next_time_step(&tmpyear,&tmpmonth,&tmpday,&tmphr,
 			     &tmpjday,global->dt);
-	  
+
 	  global->forceskip ++;
 
 	}
       }
     }
-  
+
 
   /** Determine the number of records to skip before starting output files **/
   skiprec = 0;
@@ -166,25 +166,24 @@ dmy_struct *make_dmy(global_param_struct *global)
   return temp;
 }
 
-void get_next_time_step(int *year, 
-			int *month, 
-			int *day, 
-			int *hr, 
-			int *jday, 
+void get_next_time_step(int *year,
+			int *month,
+			int *day,
+			int *hr,
+			int *jday,
 			int dt) {
-  
+
   int    days[12]={31,28,31,30,31,30,31,31,30,31,30,31};
-  int daymax;
-  
+
   *hr += dt;
   if(*hr >= 24) {
     *hr=0;
     *day += 1;
     *jday += 1;
-    
+
     if(LEAPYR(*year)) days[1] = 29;
     else days[1] = 28;
-    
+
     if(*day > days[*month-1]) {
       *day = 1;
       *month += 1;
@@ -193,9 +192,9 @@ void get_next_time_step(int *year,
 	*jday  = 1;
 	*year += 1;
       }
-    } 
+    }
   }
-  
+
 }
 
 

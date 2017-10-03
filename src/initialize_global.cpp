@@ -8,7 +8,7 @@ void initialize_global() {
   extern option_struct options;
   extern param_set_struct param_set;
 
-  int i, j;
+  int j;
 
   /** Initialize model option flags **/
 

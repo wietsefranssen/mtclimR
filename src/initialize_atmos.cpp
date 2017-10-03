@@ -52,7 +52,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
   int hour_offset_int;
   int tmp_starthour, tmp_endhour;
   int local_startyear, local_startmonth, local_startday;
-  int local_starthour, local_endhour;
+  int local_starthour;
   int day_in_year, year, month, days_in_month;
   int tmp_nrecs;
   int Ndays_local;
@@ -1260,8 +1260,8 @@ void initialize_atmos(atmos_data_struct        *atmos,
   }
   free(local_forcing_data);
 
-  for(i=0;i<N_FORCING_TYPES;i++) 
-    if (param_set.TYPE[i].SUPPLIED) 
+  for(i=0;i<N_FORCING_TYPES;i++)
+    if (param_set.TYPE[i].SUPPLIED)
       free(forcing_data[i]);
   free(forcing_data);
 

@@ -43,7 +43,7 @@ out_data_struct *create_output_list() {
   2010-Sep-24 Renamed RUNOFF_IN and OUT_RUNOFF_IN to CHANNEL_IN and
 	      OUT_LAKE_CHAN_IN, respectively.  Renamed OUT_EVAP_LAKE
 	      to OUT_LAKE_EVAP.  Added other lake water balance terms
-	      to set of output variables.  Added volumetric versions 
+	      to set of output variables.  Added volumetric versions
 	      of these too.						TJB
   2010-Nov-02 Added OUT_LAKE_RO_IN and OUT_LAKE_RO_IN_V for reporting
 	      overland runoff input to lake.  Added OUT_LAKE_RCHRG and
@@ -352,9 +352,7 @@ void free_out_data_files(out_data_file_struct **out_data_files) {
   This routine frees the memory in the out_data_files array.
 
 *************************************************************/
-  extern option_struct options;
- 
-    free((*out_data_files)->varid);
+  free((*out_data_files)->varid);
   free((*out_data_files));
 
 }

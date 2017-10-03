@@ -106,7 +106,6 @@ List mtclimRun(List forcing_dataR, List settings) {
    **************************************************/
 
   int                 rec, i, j, v;
-  int                 dummy_dt;
   int                 dt_sec;
   double              **out_dataAllRecs;
   out_dataAllRecs = (double **)calloc(out_data_files[0].nvars,sizeof(double*));

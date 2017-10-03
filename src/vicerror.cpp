@@ -8,7 +8,7 @@ void vicerror(const char error_text[])
 	vicerror.c	Keith Cherkauer		April 23, 1997
 
   This subroutine was written to handle numerical errors within the
-  VIC model.  This will flush all file buffers so that all records 
+  VIC model.  This will flush all file buffers so that all records
   that have been run will be written to disk before the model is exited.
 
   Modifications:
@@ -18,8 +18,7 @@ void vicerror(const char error_text[])
   2012-Jan-16 Removed LINK_DEBUG code					BN
 **********************************************************************/
 {
-        extern option_struct options;
-	extern Error_struct Error;
+  extern option_struct options;
 	void _exit();
 
         options.COMPRESS=FALSE;	/* turn off compression of last set of files */

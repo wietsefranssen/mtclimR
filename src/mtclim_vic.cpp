@@ -8,7 +8,7 @@
 	 The original comments have largely been left intact
 	 typedefs and function definitions have been moved to mtclim42_vic.h
 	 functions are called from mtclim42_wrapper.c
-  Changes:  The only changes to the original MTCLIM code are 
+  Changes:  The only changes to the original MTCLIM code are
             - cloudiness is returned for each day as well through the variable
 	    tskc (calculated using equation 2.29 in Bras, R. L., "Hydrology, an
 	    introduction to hydrologic science", Addison-Wesley, Reading,
@@ -19,10 +19,10 @@
 	    - SRADDT has been changed to be 300 sec
 	    Changes are preceded by the comment * start vic_change *  and
 	    followed by the comment * end vic_change *
-  Author: Most of the code was written by Peter E. Thornton at the Univeristy of 
+  Author: Most of the code was written by Peter E. Thornton at the Univeristy of
           Montana (see below).
 	  Adapted by: Bart Nijssen
-          Adaptation started on Sat Aug 21 using the mtclim4.2 code from 5/7/1999 
+          Adaptation started on Sat Aug 21 using the mtclim4.2 code from 5/7/1999
   Modifications:
   2004-Jun-04 If data->s_srad becomes negative, we set it to 0.0.		TJB
   2005-Jun-15 If p->base_isoh and p->site_isoh are both small, set ratio = 1.
@@ -52,7 +52,7 @@
 mtclim43.c
 
 MTCLIM
-VERSION 4.3  
+VERSION 4.3
 
 Peter Thornton
 NTSG, School of Forestry
@@ -112,7 +112,7 @@ CHANGES FROM VERSION 4.0 TO VERSION 4.1
 1) ADDITIONAL REVISION OF RADIATION CODE, FOLLOWING SUBMISSION OF AG FOR MET
 MANUSCRIPT DESCRIBING ANALYSIS OF SAMSON DATA.  The current code
 follows exactly the algorithm detailed in
-Thornton, P.E. and S.W. Running, 1999. An improved algorithm for estimating 
+Thornton, P.E. and S.W. Running, 1999. An improved algorithm for estimating
 incident daily solar radiation from measurements of temperature, humidity,
 and precipitation. Ag For Met 93:211-228.
 
@@ -125,7 +125,7 @@ radiation
 4) 2-day tmin smoothing no longer an option
 5) solar constant now calculated as an analytical function of yearday,
 instead of the monthly array of values in earlier versions. removes the
-discontinuities between months. 
+discontinuities between months.
 6) boxcar function now uses the previous n days of data, making it a
 "pulled boxcar" instead of a "centered boxcar"
 
@@ -175,10 +175,10 @@ Example initialization file:
 sample               (this entire line written to outfiles)
 other comments       (this entire line discarded)
 
-IOFILES                    Keyword, don't edit this line 
+IOFILES                    Keyword, don't edit this line
 test.mtcin                 Name of input meteorological data file
 test                       Prefix for output file
-                      
+
 CONTROL                    Keyword, don't edit this line
 3                          (int) Number of header lines in input file
 365                        (int) Number of days of data in input file
@@ -217,7 +217,7 @@ are NOT part of the file.
 
 
 INPUT FILE INFO
-All input temperatures are in degrees Celcius, and precipitation is in 
+All input temperatures are in degrees Celcius, and precipitation is in
 centimeters.
 Input data file format:
 <some number of header lines (can be zero)>
@@ -240,7 +240,7 @@ This is a header line, which is discarded
 OUTPUT FILE INFO
 The output file is created by appending ".mtcout" to the output filename
 prefix specified in the initialization file. Existing files are overwritten,
-so be careful to rename files between runs if you want to save the results, 
+so be careful to rename files between runs if you want to save the results,
 and for safety, don't use ".mtcout" as the extension for the input data file.
 
 ******************************
@@ -248,7 +248,7 @@ Input and Output CONTROL FLAGS
 ******************************
 There is a flag in the initialization file that controls the input of dewpoint
 temperature information. If your input file does not contain dewpoint data,
-set this flag to 0. Otherwise, if you have dewpoint temperature information 
+set this flag to 0. Otherwise, if you have dewpoint temperature information
 in your input file, set this flag to 1, and be sure that the dewpoint
 temperature field is between the tmin and prcp fields, as specified under
 the heading "INPUT FILE INFO", above.
@@ -311,17 +311,17 @@ int data_alloc(const control_struct *ctrl, data_struct *data)
 {
   int ok=1;
   int ndays;
-  
+
   ndays = ctrl->ndays;
 
   if (ok && ctrl->inyear && !(data->year = (int*) malloc(ndays * sizeof(int)))) {
     printf("Error allocating for year array\n");
     ok=0;
-  } 
+  }
   if (ok && !(data->yday = (int*) malloc(ndays * sizeof(int)))) {
     printf("Error allocating for yearday array\n");
     ok=0;
-  } 
+  }
   if (ok && !(data->tmax = (double*) malloc(ndays * sizeof(double)))) {
     printf("Error allocating for tmax array\n");
     ok=0;
@@ -334,7 +334,7 @@ int data_alloc(const control_struct *ctrl, data_struct *data)
     printf("Error allocating for prcp array\n");
     ok=0;
   }
-  if (ok && ctrl->indewpt && 
+  if (ok && ctrl->indewpt &&
       !(data->tdew = (double*) malloc(ndays * sizeof(double)))) {
     printf("Error allocating for input humidity array\n");
     ok=0;
@@ -397,18 +397,18 @@ int data_alloc(const control_struct *ctrl, data_struct *data)
 } /* end of data_alloc() */
 
 /* calc_tair() calculates daily air temperatures */
-int calc_tair(const control_struct *ctrl, const parameter_struct *p, 
+int calc_tair(const control_struct *ctrl, const parameter_struct *p,
 	      data_struct *data)
 {
   int ok=1;
   int i,ndays;
   double dz;
   double tmean, tmax, tmin;
-  
+
   ndays = ctrl->ndays;
   /* calculate elevation difference in kilometers */
   dz = (p->site_elev - p->base_elev)/1000.0;
-  
+
   /* apply lapse rate corrections to tmax and tmin */
   /* Since tmax lapse rate usually has a larger absolute value than tmin
      lapse rate, it is possible at high elevation sites for these corrections
@@ -418,26 +418,26 @@ int calc_tair(const control_struct *ctrl, const parameter_struct *p,
     /* lapse rate corrections */
     data->s_tmax[i] = tmax = data->tmax[i] + (dz * p->tmax_lr);
     data->s_tmin[i] = tmin = data->tmin[i] + (dz * p->tmin_lr);
-    
+
     /* derived temperatures */
     tmean = (tmax + tmin)/2.0;
     data->s_tday[i] = ((tmax - tmean)*TDAYCOEF) + tmean;
   }
-  
+
   return (!ok);
 }
 /* end of calc_tair() */
 
 /* calc_prcp() calculates daily total precipitation */
-int calc_prcp(const control_struct *ctrl, const parameter_struct *p, 
+int calc_prcp(const control_struct *ctrl, const parameter_struct *p,
 	      data_struct *data)
 {
   int ok=1;
   int i,ndays;
   double ratio;
-  
+
   ndays = ctrl->ndays;
-  
+
   /* start vic_change */
   ratio = -1.;
   if ( p->site_isoh < 1e-10 && p->base_isoh < 1e-10 ) {
@@ -453,13 +453,13 @@ int calc_prcp(const control_struct *ctrl, const parameter_struct *p,
     ratio = p->site_isoh / p->base_isoh;
   }
   /* end vic_change */
-  
+
   if (ok) {
     for (i=0 ; i<ndays ; i++) {
       data->s_prcp[i] = data->prcp[i] * ratio;
     }
   }
-  
+
   return (!ok);
 }
 /* end of calc_prcp() */
@@ -473,7 +473,7 @@ int snowpack(const control_struct *ctrl, const parameter_struct *p,
   int i,ndays,count;
   int start_yday,prev_yday;
   double snowpack,newsnow,snowmelt,sum;
-  
+
   ndays = ctrl->ndays;
 
   /* first pass to initialize SWE array */
@@ -556,11 +556,9 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
   double cosh,sinh;
   double cza,cbsa,coszeh,coszwh;
   double dir_flat_topa,am;
-  double t_tmax,b;
-  double tmink,ratio,ratio2,ratio3,tdewk;
+  double b;
   double pvs,vpd;
   double trans1,trans2;
-  double t_final,pdif,pdir,srad1,srad2; 
   double pa;
   double sky_prop;
   double avg_horizon, slope_excess;
@@ -570,14 +568,13 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
   /* optical airmass by degrees */
   double optam[21] = {2.90,3.05,3.21,3.39,3.69,3.82,4.07,4.37,4.72,5.12,5.60,
 		      6.18,6.88,7.77,8.90,10.39,12.44,15.36,19.79,26.96,30.00};
-  
+
   /* start vic_change */
   int tinystep;
   int tinystepspday;
   extern option_struct options;
-  double tfmax_tmp;
   /* end vic_change */
-  
+
   int iter;
   int max_iter;
   double rmse_tdew;
@@ -588,7 +585,7 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
 
   /* number of simulation days */
   ndays = ctrl->ndays;
-  
+
   /* local array memory allocation */
   /* allocate space for DTR and smoothed DTR arrays */
   if (!(dtr = (double*) malloc(ndays * sizeof(double)))) {
@@ -644,11 +641,11 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
   for (i=0 ; i<ndays ; i++) {
     tmax = data->tmax[i];
     tmin = data->tmin[i];
-    if (tmax < tmin) 
+    if (tmax < tmin)
       tmax = tmin;
     dtr[i] = tmax-tmin;
   }
-  
+
   /* smooth dtr array: After Bristow and Campbell, 1984 */
   if (ndays >= 30) { /* use 30-day antecedent smoothing window */
     if (pulled_boxcar(dtr, sm_dtr, ndays, 30, 0)) {
@@ -670,7 +667,7 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
   }
   ann_prcp = (sum_prcp/(double)ndays) * 365.25;
   if (ann_prcp == 0.0) ann_prcp = 1.0;
-	
+
   /* Generate the effective annual precip, based on a 3-month
      moving-window. Requires some special case handling for the
      beginning of the record and for short records. */
@@ -686,7 +683,7 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
        is less than 8 cm, set the effective annual precip to 8 cm
        to reflect an arid condition, while avoiding possible
        division-by-zero errors and very large ratios (PET/Pann) */
-    if (effann_prcp < 8.0) 
+    if (effann_prcp < 8.0)
       effann_prcp = 8.0;
     for (i=0 ; i<ndays ; i++) {
       parray[i] = effann_prcp;
@@ -706,20 +703,20 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
     else {
       isloop = (end_yday == 365 || end_yday == 366) ? 1 : 0;
     }
-    
+
     /* fill the first 90 days of window */
     for (i=0 ; i<90 ; i++) {
-      if (isloop) 
+      if (isloop)
 	window[i] = data->s_prcp[ndays-90+i];
-      else 
+      else
 	window[i] = data->s_prcp[i];
     }
     /* fill the rest of the window array */
     for (i=0 ; i<ndays ; i++) {
       window[i+90] = data->s_prcp[i];
     }
-    
-    /* for each day, calculate the effective annual precip from 
+
+    /* for each day, calculate the effective annual precip from
        scaled 90-day total */
     for (i=0 ; i<ndays ; i++)	{
       sum_prcp = 0.0;
@@ -733,35 +730,35 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
 	 division-by-zero errors and very large ratios (PET/Pann) */
       parray[i] = (sum_prcp < 8.0) ? 8.0 : sum_prcp;
     }
-  } /* end if ndays >= 90 */	
-  
+  } /* end if ndays >= 90 */
+
   /*****************************************
    *                                       *
    * start of the main radiation algorithm *
    *                                       *
    *****************************************/
-  
-  /* before starting the iterative algorithm between humidity and 
-     radiation, calculate all the variables that don't depend on 
+
+  /* before starting the iterative algorithm between humidity and
+     radiation, calculate all the variables that don't depend on
      humidity so they only get done once. */
-  
+
   /* STEP (1) calculate pressure ratio (site/reference) = f(elevation) */
   t1 = 1.0 - (LR_STD * p->site_elev)/T_STD;
   t2 = G_STD / (LR_STD * (R/MA));
   pratio = pow(t1,t2);
-  
-  /* STEP (2) correct initial transmittance for elevation */ 
+
+  /* STEP (2) correct initial transmittance for elevation */
   trans1 = pow(TBASE,pratio);
-  
+
   /* STEP (3) build 366-day array of ttmax0, potential rad, and daylength */
-  
+
   /* precalculate the transcendentals */
   lat = p->site_lat;
   /* check for (+/-) 90 degrees latitude, throws off daylength calc */
   lat *= RADPERDEG;
-  if (lat > 1.5707) 
+  if (lat > 1.5707)
     lat = 1.5707;
-  if (lat < -1.5707) 
+  if (lat < -1.5707)
     lat = -1.5707;
   coslat = cos(lat);
   sinlat = sin(lat);
@@ -772,9 +769,9 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
   /* cosine of zenith angle for east and west horizons */
   coszeh = cos(1.570796 - (p->site_ehoriz * RADPERDEG));
   coszwh = cos(1.570796 - (p->site_whoriz * RADPERDEG));
-  
+
   /* sub-daily time and angular increment information */
-  dt = SRADDT;                /* set timestep */ 
+  dt = SRADDT;                /* set timestep */
   dh = dt / SECPERRAD;        /* calculate hour-angle step */
   /* start vic_change */
   tinystepspday = 86400/SRADDT;
@@ -786,96 +783,96 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
     decl = MINDECL * cos(((double)i + DAYSOFF) * RADPERDAY);
     cosdecl = cos(decl);
     sindecl = sin(decl);
-    
+
     /* do some precalculations for beam-slope geometry (bsg) */
     bsg1 = -sinslp * sinasp * cosdecl;
     bsg2 = (-cosasp * sinslp * sinlat + cosslp * coslat) * cosdecl;
     bsg3 = (cosasp * sinslp * coslat + cosslp * sinlat) * sindecl;
-    
+
     /* calculate daylength as a function of lat and decl */
     cosegeom = coslat * cosdecl;
     sinegeom = sinlat * sindecl;
     coshss = -(sinegeom) / cosegeom;
-    if (coshss < -1.0) 
+    if (coshss < -1.0)
       coshss = -1.0;  /* 24-hr daylight */
-    if (coshss > 1.0) 
+    if (coshss > 1.0)
       coshss = 1.0;    /* 0-hr daylight */
     hss = acos(coshss);                /* hour angle at sunset (radians) */
     /* daylength (seconds) */
     daylength[i] = 2.0 * hss * SECPERRAD;
-    
+
     /* start vic_change */
     if (daylength[i] > 86400)
       daylength[i] = 86400;
     /* end vic_change */
-    
+
     /* solar constant as a function of yearday (W/m^2) */
     sc = 1368.0 + 45.5*sin((2.0*PII*(double)i/365.25) + 1.7);
     /* extraterrestrial radiation perpendicular to beam, total over
        the timestep (J) */
     dir_beam_topa = sc * dt;
-    
+
     sum_trans = 0.0;
     sum_flat_potrad = 0.0;
     sum_slope_potrad = 0.0;
-    
+
     /* begin sub-daily hour-angle loop, from -hss to hss */
     for (h=-hss ; h<hss ; h+=dh) {
       /* precalculate cos and sin of hour angle */
       cosh = cos(h);
       sinh = sin(h);
-      
+
       /* calculate cosine of solar zenith angle */
       cza = cosegeom * cosh + sinegeom;
-      
+
       /* calculate cosine of beam-slope angle */
       cbsa = sinh * bsg1 + cosh * bsg2 + bsg3;
-      
+
       /* check if sun is above a flat horizon */
       if (cza > 0.0) {
 	/* when sun is above the ideal (flat) horizon, do all the
 	   flat-surface calculations to determine daily total
 	   transmittance, and save flat-surface potential radiation
 	   for later calculations of diffuse radiation */
-	
+
 	/* potential radiation for this time period, flat surface,
 	   top of atmosphere */
 	dir_flat_topa = dir_beam_topa * cza;
-	
+
 	/* determine optical air mass */
 	am = 1.0/(cza + 0.0000001);
 	if (am > 2.9) {
 	  ami = (int)(acos(cza)/RADPERDEG) - 69;
-	  if (ami < 0) 
+	  if (ami < 0)
 	    ami = 0;
-	  if (ami > 20) 
+	  if (ami > 20)
 	    ami = 20;
 	  am = optam[ami];
 	}
-	
+
 	/* correct instantaneous transmittance for this optical
 	   air mass */
 	trans2 = pow(trans1,am);
-	
+
 	/* instantaneous transmittance is weighted by potential
 	   radiation for flat surface at top of atmosphere to get
 	   daily total transmittance */
 	sum_trans += trans2 * dir_flat_topa;
-	
+
 	/* keep track of total potential radiation on a flat
 	   surface for ideal horizons */
 	sum_flat_potrad += dir_flat_topa;
-	
+
 	/* keep track of whether this time step contributes to
 	   component 1 (direct on slope) */
 	if ((h<0.0 && cza>coszeh && cbsa>0.0) ||
 	    (h>=0.0 && cza>coszwh && cbsa>0.0)) {
-	  
+
 	  /* sun between east and west horizons, and direct on
 	     slope. this period contributes to component 1 */
 	  sum_slope_potrad += dir_beam_topa * cbsa;
 	}
-	
+
       } /* end if sun above ideal horizon */
       else dir_flat_topa = -1;
 
@@ -890,9 +887,9 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
       else
 	tiny_radfract[i][tinystep] = 0;
       /* end vic_change */
-      
+
     } /* end of sub-daily hour-angle loop */
-    
+
     /* start vic_change */
     if (daylength[i] && sum_flat_potrad > 0) {
       for (j = 0; j < tinystepspday; j++)
@@ -914,13 +911,13 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
     }
 
   } /* end of i=365 days loop */
-  
+
   /* force yearday 366 = yearday 365 */
   ttmax0[365] = ttmax0[364];
   flat_potrad[365] = flat_potrad[364];
   slope_potrad[365] = slope_potrad[364];
   daylength[365] = daylength[364];
-  
+
   /* start vic_change */
   for (j = 0 ; j < tinystepspday; j++)
     tiny_radfract[365][j] = tiny_radfract[364][j];
@@ -932,35 +929,35 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
      vary by yearday. */
   avg_horizon = (p->site_ehoriz + p->site_whoriz)/2.0;
   horizon_scalar = 1.0 - sin(avg_horizon * RADPERDEG);
-  if (p->site_slp > avg_horizon) 
+  if (p->site_slp > avg_horizon)
     slope_excess = p->site_slp - avg_horizon;
-  else 
+  else
     slope_excess = 0.0;
-  if (2.0*avg_horizon > 180.0) 
+  if (2.0*avg_horizon > 180.0)
     slope_scalar = 0.0;
   else {
     slope_scalar = 1.0 - (slope_excess/(180.0 - 2.0*avg_horizon));
-    if (slope_scalar < 0.0) 
+    if (slope_scalar < 0.0)
       slope_scalar = 0.0;
   }
   sky_prop = horizon_scalar * slope_scalar;
-  
+
   /* b parameter, and t_fmax not varying with Tdew, so these can be
      calculated once, outside the iteration between radiation and humidity
      estimates. Requires storing t_fmax in an array. */
-  for (i=0 ; i<ndays ; i++) {	
+  for (i=0 ; i<ndays ; i++) {
     /* b parameter from 30-day average of DTR */
     b = B0 + B1 * exp(-B2 * sm_dtr[i]);
-    
+
     /* proportion of daily maximum transmittance */
     t_fmax[i] = 1.0 - 0.9 * exp(-b * pow(dtr[i],C));
-    
+
     /* correct for precipitation if this is a rain day */
     if (data->prcp[i] > options.SW_PREC_THRESH) t_fmax[i] *= RAIN_SCALAR;
     data->s_tfmax[i] = t_fmax[i];
 
   }
- 
+
   /* Initial values of vapor pressure, etc */
   if (ctrl->indewpt) {
     /* Observed Tdew supplied */
@@ -998,7 +995,7 @@ int calc_srad_humidity_iterative(const control_struct *ctrl,
     tdew_save[i] = tdew[i];
     pva_save[i] = pva[i];
   }
-  
+
   /* Initial estimates of solar radiation, cloud fraction, etc. */
   compute_srad_humidity_onetime(ndays, ctrl, data, tdew, pva, ttmax0, flat_potrad, slope_potrad, sky_prop, daylength, pet, parray, pa, dtr);
 
@@ -1148,7 +1145,7 @@ void compute_srad_humidity_onetime(int ndays, const control_struct *ctrl, data_s
     /* component 2 (diffuse) */
     /* includes the effect of surface albedo in raising the diffuse
     radiation for obstructed horizons */
-    srad2 = flat_potrad[yday] * t_final * pdif * (sky_prop + DIF_ALB*(1.0-sky_prop)); 
+    srad2 = flat_potrad[yday] * t_final * pdif * (sky_prop + DIF_ALB*(1.0-sky_prop));
 
     /* snow pack influence on radiation */
     if (options.MTCLIM_SWE_CORR && data->s_swe[i] > 0.0) {
@@ -1196,7 +1193,7 @@ void compute_srad_humidity_onetime(int ndays, const control_struct *ctrl, data_s
     data->s_ppratio[i] = ratio*365.25;
     ratio2 = ratio*ratio;
     ratio3 = ratio2*ratio;
-    tdewk = tmink*(-0.127 + 1.121*(1.003 - 1.444*ratio + 12.312*ratio2 
+    tdewk = tmink*(-0.127 + 1.121*(1.003 - 1.444*ratio + 12.312*ratio2
                 - 32.766*ratio3) + 0.0006*(dtr[i]));
     tdew[i] = tdewk - KELVIN;
 
@@ -1240,7 +1237,7 @@ int data_free(const control_struct *ctrl, data_struct *data)
   return (!ok);
 }
 
-/* calc_pet() calculates the potential evapotranspiration for aridity 
+/* calc_pet() calculates the potential evapotranspiration for aridity
    corrections in calc_vpd(), according to Kimball et al., 1997 */
 double calc_pet(double rad, double ta, double pa, double dayl)
 {
@@ -1248,38 +1245,38 @@ double calc_pet(double rad, double ta, double pa, double dayl)
      double rad      (W/m2)  daylight average incident shortwave radiation
      double ta       (deg C) daylight average air temperature
      double pa       (Pa)    air pressure
-     double dayl     (s)     daylength 
+     double dayl     (s)     daylength
   */
-  
+
   double rnet;       /* (W m-2) absorbed shortwave radiation avail. for ET */
-  double lhvap;      /* (J kg-1) latent heat of vaporization of water */ 
+  double lhvap;      /* (J kg-1) latent heat of vaporization of water */
   double gamma;      /* (Pa K-1) psychrometer parameter */
   double dt = 0.2;   /* offset for saturation vapor pressure calculation */
   double t1, t2;     /* (deg C) air temperatures */
   double pvs1, pvs2; /* (Pa)   saturated vapor pressures */
   double pet;        /* (kg m-2 day-1) potential evapotranspiration */
   double s;          /* (Pa K-1) slope of saturated vapor pressure curve */
-  
+
   /* calculate absorbed radiation, assuming albedo = 0.2  and ground
      heat flux = 10% of absorbed radiation during daylight */
   rnet = rad * 0.72;
-  
+
   /* calculate latent heat of vaporization as a function of ta */
   lhvap = 2.5023e6 - 2430.54 * ta;
-  
+
   /* calculate the psychrometer parameter: gamma = (cp pa)/(lhvap epsilon)
      where:
      cp       (J/kg K)   specific heat of air
      epsilon  (unitless) ratio of molecular weights of water and air
   */
   gamma = CP * pa / (lhvap * EPS);
-  
+
   /* estimate the slope of the saturation vapor pressure curve at ta */
   /* temperature offsets for slope estimate */
   t1 = ta+dt;
   t2 = ta-dt;
-  
-  /* calculate saturation vapor pressures at t1 and t2, using formula from 
+
+  /* calculate saturation vapor pressures at t1 and t2, using formula from
      Abbott, P.F., and R.C. Tabony, 1985. The estimation of humidity parameters.
      Meteorol. Mag., 114:49-56.
   */
@@ -1289,18 +1286,18 @@ double calc_pet(double rad, double ta, double pa, double dayl)
   /* pvs2 = 610.7 * exp(17.38 * t2 / (239.0 + t2)); */
   pvs2 = svp(t2);
   /* end vic_change */
-  
+
   /* calculate slope of pvs vs. T curve near ta */
   s = (pvs1-pvs2) / (t1-t2);
-  
+
   /* calculate PET using Priestly-Taylor approximation, with coefficient
      set at 1.26. Units of result are kg/m^2/day, equivalent to mm water/day */
   pet = (1.26 * (s/(s+gamma)) * rnet * dayl)/lhvap;
-  
+
   /* return a value in centimeters/day, because this value is used in a ratio
      to annual total precip, and precip units are centimeters */
   return (pet/10.0);
-}    
+}
 
 /* atm_pres() calculates the atmospheric pressure as a function of elevation */
 double atm_pres(double elev)
@@ -1311,38 +1308,38 @@ double atm_pres(double elev)
      Edition. D. Reidel Publishing Company, Dordrecht, The Netherlands.
      (p. 168)
   */
-  
+
   int ok=1;
   double t1,t2;
   double pa;
-  
+
   t1 = 1.0 - (LR_STD * elev)/T_STD;
   t2 = G_STD / (LR_STD * (R / MA));
   pa = P_STD * pow(t1,t2);
-  
+
   return(pa);
 }
 
 /* pulled_boxcar() calculates a moving average of antecedent values in an
-   array, using either a ramped (w_flag=1) or a flat (w_flag=0) weighting */	
+   array, using either a ramped (w_flag=1) or a flat (w_flag=0) weighting */
 int pulled_boxcar(double *input,double *output,int n,int w,int w_flag)
 {
   int ok=1;
-  int tail,i,j;
+  int i,j;
   double *wt;
   double total,sum_wt;
-  
+
   if (w > n) {
     printf("Boxcar longer than array...\n");
     printf("Resize boxcar and try again\n");
     ok=0;
   }
-  
+
   if (ok && !(wt = (double*) malloc(w * sizeof(double)))) {
     printf("Allocation error in boxcar()\n");
     ok=0;
   }
-  
+
   if (ok) {
     /* when w_flag != 0, use linear ramp to weight tails,
        otherwise use constant weight */
@@ -1354,12 +1351,12 @@ int pulled_boxcar(double *input,double *output,int n,int w,int w_flag)
       }
     }
     else {
-      for (i=0 ; i<w ; i++) { 	
+      for (i=0 ; i<w ; i++) {
 	wt[i] = 1.0;
 	sum_wt += wt[i];
       }
     }
-    
+
     /* fill the output array, starting with the point where a full
        boxcar can be calculated */
     for (i=w-1 ; i<n ; i++) {
@@ -1369,18 +1366,18 @@ int pulled_boxcar(double *input,double *output,int n,int w,int w_flag)
       }
       output[i] = total/sum_wt;
     }
-    
+
     /* fill the first w elements of the output array with the value from
        the first full boxcar */
     for (i=0 ; i<w-1 ; i++) {
       output[i] = output[w-1];
     }
-    
+
     free(wt);
-    
+
   } /* end if ok */
-  
+
   return (!ok);
 }
-/* end of pulled_boxcar() */  
+/* end of pulled_boxcar() */
 

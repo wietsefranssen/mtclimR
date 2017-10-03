@@ -38,4 +38,6 @@ mtclim_getSettings <- function() {
     density    = list(VICName = "OUT_DENSITY",    units = "kg m-3"),
     wind       = list(VICName = "OUT_WIND",       units = "m s-1")
   )
+
+  return(settings)
 }

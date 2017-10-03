@@ -1,4 +1,4 @@
-main_netcdf<-function(settings = settings) {
+mtclim_run<-function(settings = settings) {
   ## Start profiler
   start.time.total <- Sys.time()
 

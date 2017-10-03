@@ -1,5 +1,5 @@
 exportPattern("^[[:alpha:]]+")
 importFrom(Rcpp, evalCpp)
-export(main_netcdf)
-export(mtclim_runExample)
+export(mtclim_run)
+export(mtclim_getSettings)
 useDynLib(mtclimR)

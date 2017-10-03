@@ -1,11 +1,10 @@
-mtclim_runExample <- function() {
+mtclim_getSettings <- function() {
   ## INIT SETTINGS
   settings <- initSettings(startdate = "1950-01-01",
                            enddate = "1950-1-31",
                            outstep = 6,
-                           lonlatbox = c(108.25, 110.25, 35.25, 36.25),
+                           lonlatbox = c(92.25, 110.25, 7.25, 36.25),
                            outfile = "example_output_Mekong.nc")
-  # lonlatbox = c(92.25, 110.25, 7.25, 36.25))
 
   ## Some system settings
   settings$system$nCores <- 2
@@ -39,7 +38,4 @@ mtclim_runExample <- function() {
     density    = list(VICName = "OUT_DENSITY",    units = "kg m-3"),
     wind       = list(VICName = "OUT_WIND",       units = "m s-1")
   )
-
-  ## run the main routine
-  main_netcdf(settings)
 }

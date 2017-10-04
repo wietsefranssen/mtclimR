@@ -3,7 +3,7 @@ mtclim_run<-function(settings = settings) {
   start.time.total <- Sys.time()
 
   ## Register nr of cores
-  print(paste("nCores: ", settings$system$nCores))
+  cat(paste("nCores: ", settings$system$nCores),"\n")
   registerDoParallel(cores=settings$system$nCores)
 
   ## Set outvars in settings
@@ -50,8 +50,8 @@ mtclim_run<-function(settings = settings) {
     profile$end.time.read <- Sys.time()
 
     ## Init progressbar
-    pb <- txtProgressBar(min = 0, max = part$ny, initial = 0, char = "=",
-                         width = NA, title, label, style = 3, file = "")
+    pb <- txtProgressBar(min = 0, max = part$ny, initial = 0, char = ">",
+                         width = 80, title, label, style = 1, file = "")
 
     profile$start.time.run <- Sys.time()
     ## CELL LOOP
@@ -109,13 +109,13 @@ mtclim_run<-function(settings = settings) {
     profile$end.time.write <- Sys.time()
 
     ## Print info about part
-    cat(sprintf("  Times (read/run/write/total): %.1f/%.1f/%.1f/%.1f minutes",
+    cat(sprintf("  Times (read/run/write/total): %.1f/%.1f/%.1f/%.1f minutes\n",
                 as.numeric(profile$end.time.read - profile$start.time.read, units = "mins"),
                 as.numeric(profile$end.time.run - profile$start.time.run, units = "mins"),
                 as.numeric(profile$end.time.write - profile$start.time.write, units = "mins"),
                 as.numeric(profile$end.time.write - profile$start.time.read, units = "mins"),
                 format(object.size(forcing_dataRTotal), units = "auto")))
-    cat(sprintf("         Sizes (read/write): %s/%s\n",
+    cat(sprintf("  Sizes (read/write): %s/%s\n",
                 format(object.size(forcing_dataRTotal), units = "auto"),
                 format(object.size(toNetCDFData), units = "auto")))
 

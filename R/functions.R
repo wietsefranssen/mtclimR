@@ -98,7 +98,7 @@ makeNetcdfOut <- function(settings, mask) {
   }
 
   ## SAVE AS NC-DATA
-  print(paste0("Output file: ", settings$outfile))
+  cat(sprintf("Output file: %s\n", settings$outfile))
   # ncid <- nc_create_par(settings$outfile, dataAllVars,force_v4=TRUE)
   ncid <- nc_create(settings$outfile, dataAllVars, force_v4=TRUE)
 
@@ -138,7 +138,7 @@ calcMinNParts <- function(settings, mask) {
   minNParts <- ceiling(memTotal / maxMem) #
   # maxNParts <- ceiling(memTotal / maxMem * 2) #*2 for safety
 
-  print(sprintf("Memory needed: %s (Max mem: %s), minimum number of parts: %d", hsize(memTotal), hsize(maxMem), minNParts))
+  cat(sprintf("Memory needed: %s (Max mem: %s), minimum number of parts: %d\n", hsize(memTotal), hsize(maxMem), minNParts))
 
   return(minNParts)
 }
@@ -228,7 +228,7 @@ setSubDomains <- function(settings, mask, nPart = NULL) {
     }
   }
 
-  print(paste0("Total cells: ", nCells, ", Active Cells: ", nActive, ", nParts: ", nPart))
+  cat(sprintf("Total cells: %d, Active Cells: %d, nParts: %d\n",nCells , nActive, nPart))
 
   return(parts)
 }

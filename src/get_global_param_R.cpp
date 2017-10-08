@@ -62,7 +62,7 @@ global_param_struct get_global_param_R(Rcpp::List list) {
   global.endyear = (int)list["endyear"];
   global.endmonth = (int)list["endmonth"];
   global.endday = (int)list["endday"];
-  options.FULL_ENERGY = TRUE;
+  options.FULL_ENERGY = FALSE;
   options.FROZEN_SOIL = FALSE;
   options.QUICK_FLUX = TRUE;
   options.NOFLUX = FALSE;

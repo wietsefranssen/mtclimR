@@ -99,8 +99,8 @@ mtclim_run<-function(settings = settings) {
     for (iYear in 1:length(settings$ncOut)) {
       profile$start.time.write <- Sys.time()
       ncid <- nc_open(settings$ncOut[[iYear]]$fileName, write = TRUE)
-      sIndex <- settings$ncOut[[1]]$sIndex
-      eIndex <- settings$ncOut[[1]]$eIndex
+      sIndex <- settings$ncOut[[iYear]]$sIndex
+      eIndex <- settings$ncOut[[iYear]]$eIndex
       for (iVar in 1:length(settings$outputVars))
       {
         ncvar_put(ncid,

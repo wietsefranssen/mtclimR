@@ -96,8 +96,8 @@ mtclim_run<-function(settings = settings) {
     profile$start.time.write <- Sys.time()
 
     ## Define numer of years
+    profile$start.time.write <- Sys.time()
     for (iYear in 1:length(settings$ncOut)) {
-      profile$start.time.write <- Sys.time()
       ncid <- nc_open(settings$ncOut[[iYear]]$fileName, write = TRUE)
       sIndex <- settings$ncOut[[iYear]]$sIndex
       eIndex <- settings$ncOut[[iYear]]$eIndex
@@ -116,7 +116,6 @@ mtclim_run<-function(settings = settings) {
       }
       nc_close(ncid)
     }
-
     profile$end.time.write <- Sys.time()
 
     ## Print info about part

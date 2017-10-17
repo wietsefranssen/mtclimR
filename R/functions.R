@@ -1,4 +1,4 @@
-initSettings <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatbox = NULL, outfile = "output.nc") {
+initSettings <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatbox = NULL, outfile = "output.nc", outperyear = FALSE) {
 
   system <- list (
     nCores = 2,
@@ -28,6 +28,7 @@ initSettings <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatb
     enddate = as.Date(enddate),
     outstep = outstep,
     outfile = outfile,
+    outperyear = outperyear,
     mtclim = mtclim,
     intern = intern,
     system = system
@@ -55,6 +56,9 @@ initSettings <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatb
   settings$mtclim$endday = ymdEnd[3]
   settings$mtclim$ienddate = settings$intern$nrec_in
 
+  ## make possible for splitup per year
+  settings <- setNcOutInfo(settings)
+
   return(settings)
 }
 
@@ -74,7 +78,61 @@ setInputVars <- function(settings, inputVars) {
   return(settings)
 }
 
-makeNetcdfOut <- function(settings, mask) {
+setNcOutInfo <- function(settings = settings) {
+  settings$ncOut <- NULL
+  ncOut <- NULL
+  ncOut$startdate <- settings$startdate
+  ncOut$enddate <- settings$enddate
+  # ncOut$nrec_out <- settings$intern$nrec_out
+
+  if (settings$outperyear) {
+    ## Define numer of years
+    sYear<-as.numeric(strsplit(as.character(settings$startdate), "-")[[1]])[1]
+    eYear<-as.numeric(strsplit(as.character(settings$enddate), "-")[[1]])[1]
+    nYear <- eYear - sYear + 1
+
+    for (iYear in 1:nYear) {
+      if (iYear == 1) {
+        ncOut$startdate <- settings$startdate
+        ncOut$sIndex <- 1
+      } else {
+        ncOut$startdate <- as.Date(paste0(sYear+iYear-1, "-01-01"))
+        ncOut$sIndex <- settings$ncOut[[iYear - 1]]$sIndex + settings$ncOut[[iYear - 1]]$nrec_out
+      }
+
+      if (iYear == nYear) {
+        ncOut$enddate <- settings$enddate
+      } else {
+        ncOut$enddate <- as.Date(paste0(sYear+iYear-1, "-12-31"))
+      }
+      nDays <-  as.numeric((ncOut$enddate - ncOut$startdate) + 1)
+      ncOut$nrec_out <- nDays * (24/settings$outstep)
+      ncOut$year <- as.numeric(strsplit(as.character(ncOut$startdate), "-")[[1]])[1]
+      ncOut$eIndex <- (ncOut$sIndex + ncOut$nrec_out ) - 1
+      ncOut$fileName <- paste0(settings$outfile, as.character(ncOut$year), ".nc")
+      ## Fill list
+      settings$ncOut[[iYear]] <- ncOut
+    }
+  } else {
+    ncOut$startdate <- settings$startdate
+    ncOut$sIndex <- 1
+    ncOut$enddate <- settings$enddate
+    nDays <-  as.numeric((ncOut$enddate - ncOut$startdate) + 1)
+    ncOut$nrec_out <- nDays * (24/settings$outstep)
+    ncOut$year <- as.numeric(strsplit(as.character(ncOut$startdate), "-")[[1]])[1]
+    ncOut$eIndex <- (ncOut$sIndex + ncOut$nrec_out ) - 1
+    ncOut$fileName <- paste0(settings$outfile,
+                             gsub("-", "",as.character(ncOut$startdate)), "-",
+                             gsub("-", "",as.character(ncOut$enddate)),
+                             ".nc")
+    settings$ncOut[[1]] <- ncOut
+  }
+
+  # print(settings$ncOut)
+  return(settings)
+}
+
+makeNetcdfOut <- function(settings, mask, ncOut) {
 
   ## CREATE NETCDF
   FillValue <- 1e20
@@ -82,12 +140,12 @@ makeNetcdfOut <- function(settings, mask) {
   ## Define dimensions
   dimX <- ncdim_def("lon", "degrees_east", mask$xyCoords$x)
   dimY <- ncdim_def("lat", "degrees_north",mask$xyCoords$y)
-  timeString <-format(strptime(settings$startdate, format = "%Y-%m-%d", tz = "GMT"),format="%Y-%m-%d %T")
-  timeArray <-c(0:(settings$intern$nrec_out-1)) * (24 / (24/settings$outstep))
+  timeString <-format(strptime(ncOut$startdate, format = "%Y-%m-%d", tz = "GMT"),format="%Y-%m-%d %T")
+  timeArray <-c(0:(ncOut$nrec_out-1)) * (24 / (24/settings$outstep))
   dimT <- ncdim_def("time", paste0("hours since ",timeString), timeArray, unlim = FALSE)
 
   chunksizes_preffered<-c(40,40,256)
-  dimsizes<-c(length(mask$xyCoords$x),length(mask$xyCoords$y),settings$intern$nrec_out)
+  dimsizes<-c(length(mask$xyCoords$x),length(mask$xyCoords$y),ncOut$nrec_out)
   chunksizes<- pmin(chunksizes_preffered,dimsizes)
   ################
   data <- ncvar_def(name=names(settings$outputVars[1]), units='', compression = 7, chunksizes=chunksizes, dim=list(dimX,dimY,dimT), missval=FillValue, prec="float")
@@ -98,9 +156,9 @@ makeNetcdfOut <- function(settings, mask) {
   }
 
   ## SAVE AS NC-DATA
-  cat(sprintf("Output file: %s\n", settings$outfile))
+  cat(sprintf("Output files: %s\n", ncOut$fileName))
   # ncid <- nc_create_par(settings$outfile, dataAllVars,force_v4=TRUE)
-  ncid <- nc_create(settings$outfile, dataAllVars, force_v4=TRUE)
+  ncid <- nc_create(ncOut$fileName, dataAllVars, force_v4=TRUE)
 
   ncatt_put( ncid, "lon", "standard_name", "longitude")
   ncatt_put( ncid, "lon", "long_name",     "Longitude")
@@ -122,7 +180,6 @@ makeNetcdfOut <- function(settings, mask) {
   ## Close Netcdf file
   nc_close(ncid)
 }
-
 
 calcMinNParts <- function(settings, mask) {
   BYTE<-8
@@ -324,74 +381,6 @@ initParams <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatbox
     outstep = outstep,
     toCpp = toCpp
   )
-  return(params)
-}
-
-addNetcdfData2Params <- function(variableInfo, params) {
-  startDate <- params$startdate
-  endDate <- params$enddate
-  lonlatbox <- params$lonlatbox
-
-  ncid <- nc_open(variableInfo[[1]]$ncFileName)
-  nt<-ncid$dim$time$len
-
-  lonlatboxindex <- rep(NA,4)
-  lonlatboxindex[1] <- match(params$lonlatbox[1],ncid$dim$lon$vals)
-  lonlatboxindex[2] <- match(params$lonlatbox[2],ncid$dim$lon$vals)
-  lonlatboxindex[3] <- match(params$lonlatbox[3],ncid$dim$lat$vals)
-  lonlatboxindex[4] <- match(params$lonlatbox[4],ncid$dim$lat$vals)
-
-  ## getting time indexes and info
-  timesteps <- ncvar_get(ncid, "time")
-  tunits <- ncatt_get(ncid, "time", "units")
-  tustr <- strsplit(tunits$value, " ")
-  dUnit <- unlist(tustr)[3]
-  allDates <- as.Date(timesteps, origin=dUnit) ## minus 2 because 0001 is officially an invalid year!!!
-  iStartDate <- which(allDates == startDate)
-  iEndDate <- which(allDates == endDate)
-  nrec_in <- iEndDate - iStartDate + 1
-  print(paste("start date: ", allDates[iStartDate], " end date: ", allDates[iEndDate]))
-  ymdStart<-as.numeric(strsplit(as.character(allDates[iStartDate]), "-")[[1]])
-  ymdEnd<-as.numeric(strsplit(as.character(allDates[iEndDate]), "-")[[1]])
-  rm(timesteps,tunits,tustr,dUnit,allDates)
-
-
-  ## Define nx, ny, startx, starty
-  nx<-abs(lonlatboxindex[2]-lonlatboxindex[1])+1
-  ny<-abs(lonlatboxindex[4]-lonlatboxindex[3])+1
-  startx<-min(lonlatboxindex[1:2])
-  starty<-min(lonlatboxindex[3:4])
-
-  ## Add to params
-  params$intern$lonlatboxindex = lonlatboxindex
-  params$intern$lons = ncid$dim$lon$vals[startx:(startx+nx-1)]
-  params$intern$lats = ncid$dim$lat$vals[starty:(starty+ny-1)]
-  params$intern$nx = nx
-  params$intern$ny = ny
-  params$intern$startx = startx
-  params$intern$starty = starty
-  params$toCpp$startyear = ymdStart[1]
-  params$toCpp$startmonth = ymdStart[2]
-  params$toCpp$startday = ymdStart[3]
-  params$toCpp$istartdate = iStartDate
-  params$toCpp$endyear = ymdEnd[1]
-  params$toCpp$endmonth = ymdEnd[2]
-  params$toCpp$endday = ymdEnd[3]
-  params$toCpp$ienddate = iEndDate
-  params$intern$nrec_in = nrec_in
-  if ( exists("alma", where = variableInfo[[1]]))  params$toCpp$alma_input = variableInfo[[1]]$alma
-
-  ## Add forcing info to params
-  nForcing = length(variableInfo)
-  forcingIds = array(NA, dim = c(nForcing))
-  for (iFor in 1:nForcing) {
-    forcingIds[iFor] =variableInfo[[iFor]]$vicIndex
-  }
-
-  params$toCpp$nForcing = length(variableInfo)
-  params$toCpp$forcingIds = forcingIds
-
-  nc_close(ncid)
   return(params)
 }
 

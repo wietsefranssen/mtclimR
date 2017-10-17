@@ -5,7 +5,8 @@ mtclim_getSettings <- function() {
                            enddate = "1950-1-31",
                            outstep = 6,
                            lonlatbox = c(92.25, 110.25, 7.25, 36.25),
-                           outfile = "example_output_Mekong.nc")
+                           outfile = "example_output_Mekong_",
+                           outperyear = TRUE)
 
   ## Some system settings
   settings$system$nCores <- 2

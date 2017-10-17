@@ -19,8 +19,11 @@ mtclim_run<-function(settings = settings) {
   mask<-elevation
 
   profile<-NULL
+
   ## makeOutputNetCDF
-  makeNetcdfOut(settings, elevation)
+  for (iYear in 1:length(settings$ncOut)) {
+    makeNetcdfOut(settings, elevation, settings$ncOut[[iYear]])
+  }
 
   ## Calculate minimum number of parts based on the memory in the system
   ## And make pasts list.
@@ -91,21 +94,29 @@ mtclim_run<-function(settings = settings) {
 
     ## ADD OUTPUT TO NETCDF
     profile$start.time.write <- Sys.time()
-    ncid <- nc_open(settings$outfile, write = TRUE)
-    for (iVar in 1:length(settings$outputVars))
-    {
-      ncvar_put(ncid,
-                names(settings$outputVars)[iVar],
-                toNetCDFData[[iVar]],
-                start = c(part$sx,
-                          part$sy,
-                          1),
-                count = c(part$nx,
-                          part$ny,
-                          settings$intern$nrec_out)
-      )
+
+    ## Define numer of years
+    for (iYear in 1:length(settings$ncOut)) {
+      profile$start.time.write <- Sys.time()
+      ncid <- nc_open(settings$ncOut[[iYear]]$fileName, write = TRUE)
+      sIndex <- settings$ncOut[[1]]$sIndex
+      eIndex <- settings$ncOut[[1]]$eIndex
+      for (iVar in 1:length(settings$outputVars))
+      {
+        ncvar_put(ncid,
+                  names(settings$outputVars)[iVar],
+                  toNetCDFData[[iVar]][,,sIndex:eIndex],
+                  start = c(part$sx,
+                            part$sy,
+                            1),
+                  count = c(part$nx,
+                            part$ny,
+                            settings$ncOut[[iYear]]$nrec_out)
+        )
+      }
+      nc_close(ncid)
     }
-    nc_close(ncid)
+
     profile$end.time.write <- Sys.time()
 
     ## Print info about part

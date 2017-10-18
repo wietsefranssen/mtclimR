@@ -24,6 +24,7 @@ settings <- setInputVars(settings,list(
 ))
 
 settings$lonlatbox = c(108.25, 110.25, 35.25, 36.25)
+settings$chunksizes = c(40,40,256)
 # settings$outfile = "out_"
 ## Run the main routine
 mtclim_run(settings)

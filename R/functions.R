@@ -1,4 +1,10 @@
-initSettings <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatbox = NULL, outfile = "output.nc", outperyear = FALSE) {
+initSettings <- function(startdate = NULL,
+                         enddate = NULL,
+                         outstep = 24,
+                         lonlatbox = NULL,
+                         outfile = "output.nc",
+                         outperyear = FALSE,
+                         chunksizes = c(40,40,256)) {
 
   system <- list (
     nCores = 2,
@@ -29,6 +35,7 @@ initSettings <- function(startdate = NULL, enddate = NULL, outstep = 24, lonlatb
     outstep = outstep,
     outfile = outfile,
     outperyear = outperyear,
+    chunksizes = chunksizes,
     mtclim = mtclim,
     intern = intern,
     system = system
@@ -144,7 +151,7 @@ makeNetcdfOut <- function(settings, mask, ncOut) {
   timeArray <-c(0:(ncOut$nrec_out-1)) * (24 / (24/settings$outstep))
   dimT <- ncdim_def("time", paste0("hours since ",timeString), timeArray, unlim = FALSE)
 
-  chunksizes_preffered<-c(40,40,256)
+  chunksizes_preffered <- settings$chunksizes
   dimsizes<-c(length(mask$xyCoords$x),length(mask$xyCoords$y),ncOut$nrec_out)
   chunksizes<- pmin(chunksizes_preffered,dimsizes)
   ################

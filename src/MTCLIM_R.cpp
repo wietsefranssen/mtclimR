@@ -49,7 +49,8 @@ List mtclimRun(List forcing_dataR, List settings) {
    ************************************/
   cell_cnt = 0;
 
-  soil_con.time_zone_lng = -30;
+  // soil_con.time_zone_lng = -30;
+  soil_con.time_zone_lng = (double)settings["lon"];
   // soil_con.lng = -39.25;
   // soil_con.lat = -8.25;
   // soil_con.elevation = 434;

@@ -22,7 +22,6 @@ void initialize_atmos(atmos_data_struct        *atmos,
   int     idx;
   int    *tmaxhour;
   int    *tminhour;
-  double  cell_area;
   double  theta_l;
   double  theta_s;
   double  hour_offset;
@@ -76,7 +75,6 @@ void initialize_atmos(atmos_data_struct        *atmos,
   ehoriz = soil_con->ehoriz;
   whoriz = soil_con->whoriz;
   annual_prec = soil_con->annual_prec;
-  cell_area = soil_con->cell_area;
 
   /* Check on minimum forcing requirements */
   if ( !param_set.TYPE[PREC].SUPPLIED
@@ -204,7 +202,6 @@ void initialize_atmos(atmos_data_struct        *atmos,
             || type == SNOWF
             || type == CSNOWF
             || type == LSSNOWF
-            || type == CHANNEL_IN
            ) {
           for (idx=0; idx<(global_param.nrecs*NF); idx++) {
             forcing_data[type][idx] *= param_set.FORCE_DT * 3600;
@@ -326,7 +323,6 @@ void initialize_atmos(atmos_data_struct        *atmos,
               || type == SNOWF
               || type == CSNOWF
               || type == LSSNOWF
-              || type == CHANNEL_IN
              ) {
             /* Amounts per step need to be scaled to new step length */
             local_forcing_data[type][idx] = forcing_data[type][i]/param_set.FORCE_DT;
@@ -337,57 +333,6 @@ void initialize_atmos(atmos_data_struct        *atmos,
           }
         }
       }
-    }
-  }
-
-  /*************************************************
-    Incoming Channel Flow
-  *************************************************/
-
-  if(param_set.TYPE[CHANNEL_IN].SUPPLIED) {
-    if(param_set.FORCE_DT == 24) {
-      /* daily channel_in provided */
-      for (rec = 0; rec < global_param.nrecs; rec++) {
-        sum = 0;
-        for (j = 0; j < NF; j++) {
-          hour = rec*global_param.dt + j*options.SNOW_STEP + global_param.starthour - hour_offset_int;
-          if (global_param.starthour - hour_offset_int < 0) hour += 24;
-          idx = (int)((float)hour/24.0);
-          atmos[rec].channel_in[j] = local_forcing_data[CHANNEL_IN][idx] / (float)(NF*stepspday); // divide evenly over the day
-          atmos[rec].channel_in[j] *= 1000/cell_area; // convert to mm over grid cell
-          sum += atmos[rec].channel_in[j];
-        }
-        if(NF>1) atmos[rec].channel_in[NR] = sum;
-      }
-    }
-    else {
-      /* sub-daily channel_in provided */
-      for(rec = 0; rec < global_param.nrecs; rec++) {
-        sum = 0;
-        for(i = 0; i < NF; i++) {
-          hour = rec*global_param.dt + i*options.SNOW_STEP + global_param.starthour - hour_offset_int;
-          atmos[rec].channel_in[i] = 0;
-          while (hour < rec*global_param.dt + (i+1)*options.SNOW_STEP + global_param.starthour - hour_offset_int) {
-            idx = hour;
-            if (idx < 0) idx += 24;
-	    atmos[rec].channel_in[i] += local_forcing_data[CHANNEL_IN][idx];
-            hour++;
-          }
-	  atmos[rec].channel_in[i] *= 1000/cell_area; // convert to mm over grid cell
-	  sum += atmos[rec].channel_in[i];
-        }
-        if(NF>1) atmos[rec].channel_in[NR] = sum;
-      }
-    }
-  }
-  else {
-    for(rec = 0; rec < global_param.nrecs; rec++) {
-      sum = 0;
-      for(i = 0; i < NF; i++) {
-        atmos[rec].channel_in[i] = 0;
-        sum += atmos[rec].channel_in[i];
-      }
-      if(NF>1) atmos[rec].channel_in[NR] = sum;
     }
   }
 

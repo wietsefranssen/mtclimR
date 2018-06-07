@@ -29,8 +29,6 @@ void alloc_atmos(int nrecs, atmos_data_struct **atmos)
 	      LDAS_OUTPUT and OPTIMIZE compile-time options.		TJB
   2006-Dec-20 All atmos_data arrays are always dynamically allocated
 	      now.							TJB
-  2010-Mar-31 Added runoff_in.						TJB
-  2010-Sep-24 Renamed runoff_in to channel_in.				TJB
   2011-Nov-04 Added tskc.						TJB
 
 *******************************************************************/
@@ -44,9 +42,6 @@ void alloc_atmos(int nrecs, atmos_data_struct **atmos)
   for (i = 0; i < nrecs; i++) {
     (*atmos)[i].air_temp = (double *) calloc(NR+1, sizeof(double));
     if ((*atmos)[i].air_temp == NULL)
-      vicerror((char*) "Memory allocation error in alloc_atmos().");
-    (*atmos)[i].channel_in = (double *) calloc(NR+1, sizeof(double));
-    if ((*atmos)[i].channel_in == NULL)
       vicerror((char*) "Memory allocation error in alloc_atmos().");
     (*atmos)[i].density = (double *) calloc(NR+1, sizeof(double));
     if ((*atmos)[i].density == NULL)
@@ -107,7 +102,6 @@ void free_atmos(int nrecs, atmos_data_struct **atmos)
 
   for (i = 0; i < nrecs; i++) {
     free((*atmos)[i].air_temp);
-    free((*atmos)[i].channel_in);
     free((*atmos)[i].density);
     free((*atmos)[i].longwave);
     free((*atmos)[i].prec);

@@ -51,19 +51,14 @@ List mtclimRun(List forcing_dataR, List settings) {
 
   // soil_con.time_zone_lng = -30;
   soil_con.time_zone_lng = (double)settings["lon"];
-  // soil_con.lng = -39.25;
-  // soil_con.lat = -8.25;
-  // soil_con.elevation = 434;
   soil_con.lng = (double)settings["lon"];
   soil_con.lat = (double)settings["lat"];
   soil_con.elevation = (double)settings["elevation"];
-  // printf("elevation: %f %f %f\n", soil_con.elevation, soil_con.lng, soil_con.lat);
   soil_con.slope = 0;
   soil_con.aspect = 0;
   soil_con.ehoriz = 0;
   soil_con.whoriz = 0;
   soil_con.annual_prec = 1;
-  soil_con.cell_area = 8.0218315155553431e-314;
 
   /*******************************
    read in meteorological data

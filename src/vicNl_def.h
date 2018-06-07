@@ -167,7 +167,6 @@
 #define N_FORCING_TYPES 24
 #define AIR_TEMP   0 /* air temperature per time step [C] (ALMA_INPUT: [K]) */
 #define ALBEDO     1 /* surface albedo [fraction] */
-#define CHANNEL_IN 2 /* incoming channel flow [m3] (ALMA_INPUT: [m3/s]) */
 #define CRAINF     3 /* convective rainfall [mm] (ALMA_INPUT: [mm/s]) */
 #define CSNOWF     4 /* convective snowfall [mm] (ALMA_INPUT: [mm/s]) */
 #define DENSITY    5 /* atmospheric density [kg/m3] */
@@ -501,7 +500,6 @@ typedef struct {
   float    elevation;                 /* grid cell elevation (m) */
   float    lat;                       /* grid cell central latitude */
   float    lng;                       /* grid cell central longitude */
-  double   cell_area;                 /* Area of grid cell (m^2) */
   float    time_zone_lng;             /* central meridian of the time zone */
   int      gridcel;                   /* grid cell number */
   double   slope;
@@ -519,7 +517,6 @@ typedef struct {
 ***************************************************************************/
 typedef struct {
   double *air_temp;  /* air temperature (C) */
-  double *channel_in;/* incoming channel inflow for time step (mm) */
   double *density;   /* atmospheric density (kg/m^3) */
   double *longwave;  /* incoming longwave radiation (W/m^2) (net incoming
                         longwave for water balance model) */
@@ -769,7 +766,6 @@ typedef struct {
   // Moisture fluxes
   double baseflow_in;             /* Volume of baseflow into lake from the rest of the grid cell (m3) */
   double baseflow_out;            /* Volume of baseflow out of lake to channel network (m3) */
-  double channel_in;              /* Volume of channel inflow into lake (m3) */
   double evapw;                   /* Volume of evaporative flux from lake (and ice/snow) surface (m3) */
   double ice_throughfall;         /* Volume of precipitation reaching lake water surface, i.e. total precip minus accumulation of snow on ice (m3) */
   double prec;                    /* Volume of precipitation falling on lake (and ice/snow) surface (m3) */

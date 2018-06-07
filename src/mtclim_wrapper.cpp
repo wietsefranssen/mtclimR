@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Purpose: Initialize and call mtclim routines to estimate meteorological
- *          variables 
+ *          variables
  * Usage  :
  * Author : Bart Nijssen
  * E-mail : nijssen@u.washington.edu
@@ -15,8 +15,8 @@
  *             the use of this code.  At any time, please feel free to discard
  *             this code and WRITE YOUR OWN, it's what I would do.
   Modifications:
-  2003-Apr-25 Change calls to vicerror into calls to nrerror.  
-              Vicerror may cause errors as all variables are not yet 
+  2003-Apr-25 Change calls to vicerror into calls to nrerror.
+              Vicerror may cause errors as all variables are not yet
 	      defined.							KAC
   2003-Apr-25 Compute pressures in Pa, rather than kPa.			KAC
   2011-Nov-04 Updated to mtclim 4.3. 					TJB
@@ -49,25 +49,25 @@
 /*			      FUNCTION PROTOTYPES                             */
 /******************************************************************************/
 void mtclim_init(int have_dewpt, int have_shortwave, double elevation, double slope, double aspect,
-                   double ehoriz, double whoriz, double annual_prcp, 
-		   double lat, int Ndays, dmy_struct *dmy, 
-		   double *prec, double *tmax, double *tmin, double *vp, double *hourlyrad, 
-		   double **tiny_radfract, control_struct *ctrl, 
-		   parameter_struct *p, data_struct *mtclim_data); 
+                   double ehoriz, double whoriz, double annual_prcp,
+		   double lat, int Ndays, dmy_struct *dmy,
+		   double *prec, double *tmax, double *tmin, double *vp, double *hourlyrad,
+		   double **tiny_radfract, control_struct *ctrl,
+		   parameter_struct *p, data_struct *mtclim_data);
 
-void mtclim_to_vic(double hour_offset, 
-		     int Ndays, dmy_struct *dmy, 
-		     double **tiny_radfract, control_struct *ctrl, 
-		     data_struct *mtclim_data, double *tskc, double *vp, 
+void mtclim_to_vic(double hour_offset,
+		     int Ndays, dmy_struct *dmy,
+		     double **tiny_radfract, control_struct *ctrl,
+		     data_struct *mtclim_data, double *tskc, double *vp,
 		     double *hourlyrad);
 
 void mtclim_wrapper(int have_dewpt, int have_shortwave, double hour_offset,
 		      double elevation, double slope, double aspect,
                       double ehoriz, double whoriz,
-                      double annual_prcp, double lat, 
-		      int Ndays, dmy_struct *dmy, 
+                      double annual_prcp, double lat,
+		      int Ndays, dmy_struct *dmy,
 		      double *prec, double *tmax, double *tmin, double *tskc,
-		      double *vp, double *hourlyrad) 
+		      double *vp, double *hourlyrad)
 /******************************************************************************
   mtclim_wrapper: interface between VIC and MTCLIM.
 
@@ -93,29 +93,29 @@ void mtclim_wrapper(int have_dewpt, int have_shortwave, double hour_offset,
     }
   }
 
-  /* initialize the mtclim data structures */ 
+  /* initialize the mtclim data structures */
   mtclim_init(have_dewpt, have_shortwave, elevation, slope, aspect, ehoriz, whoriz,
                 annual_prcp, lat, Ndays, dmy, prec,
 		tmax, tmin, vp, hourlyrad, tiny_radfract, &ctrl, &p,
-		&mtclim_data);  
+		&mtclim_data);
 
   /* calculate daily air temperatures */
   if (calc_tair(&ctrl, &p, &mtclim_data)) {
     nrerror((char*) "Error in calc_tair()... exiting\n");
   }
-  
+
   /* calculate daily precipitation */
   if (calc_prcp(&ctrl, &p, &mtclim_data)) {
     nrerror((char*) "Error in calc_prcp()... exiting\n");
   }
-  
+
   /* calculate daily snowpack using simple model (this is only for radiation correction, *not* the same as the VIC snowpack estimate) */
   if (snowpack(&ctrl, &p, &mtclim_data)) {
     nrerror((char*) "Error in snowpack()... exiting\n");
   }
-  
+
   /* calculate srad and humidity with iterative algorithm */
-  if (calc_srad_humidity_iterative(&ctrl, &p, &mtclim_data, tiny_radfract)) { 
+  if (calc_srad_humidity_iterative(&ctrl, &p, &mtclim_data, tiny_radfract)) {
     nrerror((char*) "Error in calc_srad_humidity_iterative()... exiting\n");
   }
 
@@ -133,12 +133,12 @@ void mtclim_wrapper(int have_dewpt, int have_shortwave, double hour_offset,
   }
   free(tiny_radfract);
 }
-  
+
 void mtclim_init(int have_dewpt, int have_shortwave, double elevation, double slope, double aspect,
-                   double ehoriz, double whoriz, double annual_prcp, 
-		   double lat, int Ndays, dmy_struct *dmy, 
-		   double *prec, double *tmax, double *tmin, double *vp, double *hourlyrad, 
-		   double **tiny_radfract, control_struct *ctrl, 
+                   double ehoriz, double whoriz, double annual_prcp,
+		   double lat, int Ndays, dmy_struct *dmy,
+		   double *prec, double *tmax, double *tmin, double *vp, double *hourlyrad,
+		   double **tiny_radfract, control_struct *ctrl,
 		   parameter_struct *p, data_struct *mtclim_data)
 {
   int i,j;
@@ -147,7 +147,7 @@ void mtclim_init(int have_dewpt, int have_shortwave, double elevation, double sl
   /* initialize the control structure */
 
   ctrl->ndays = Ndays;
-  
+
   ctrl->indewpt = 0;
   ctrl->invp = 0;
   if (have_dewpt) {
@@ -162,7 +162,7 @@ void mtclim_init(int have_dewpt, int have_shortwave, double elevation, double sl
   else ctrl->insw = 0;
   ctrl->outhum = 1;		/* output vapor pressure */
   ctrl->inyear = 0;
-  
+
   /* initialize the parameter structure.  Meteorological variables are only
      calculated for the mean grid cell elevation.  The temperatures are lapsed
      outside of the mtclim code.  Therefore p->base_elev and p->site_elev are
@@ -199,7 +199,7 @@ void mtclim_init(int have_dewpt, int have_shortwave, double elevation, double sl
     }
     if (ctrl->invp) mtclim_data->s_hum[i] = vp[i];
     /* MTCLIM prcp in cm */
-    mtclim_data->prcp[i] = prec[i]/10.; 
+    mtclim_data->prcp[i] = prec[i]/10.;
     if (have_dewpt==1)
       nrerror((char*) "have_dewpt not yet implemented ...\n");
   }
@@ -211,10 +211,10 @@ void mtclim_init(int have_dewpt, int have_shortwave, double elevation, double sl
   }
 }
 
-void mtclim_to_vic(double hour_offset, 
-		     int Ndays, dmy_struct *dmy, 
-		     double **tiny_radfract, control_struct *ctrl, 
-		     data_struct *mtclim_data, double *tskc, double *vp, 
+void mtclim_to_vic(double hour_offset,
+		     int Ndays, dmy_struct *dmy,
+		     double **tiny_radfract, control_struct *ctrl,
+		     data_struct *mtclim_data, double *tskc, double *vp,
 		     double *hourlyrad)
 /******************************************************************************
   mtclim_to_vic: Store MTCLIM variables in VIC arrays.
@@ -229,7 +229,7 @@ void mtclim_to_vic(double hour_offset,
   int tinystep;
   int tiny_offset;
   double tmp_rad;
-  
+
   tinystepsphour = 3600/SRADDT;
 
   tiny_offset = (int)((float)tinystepsphour * hour_offset);
@@ -254,17 +254,17 @@ void mtclim_to_vic(double hour_offset,
       for (k = 0; k < tinystepsphour; k++) {
         tinystep = j*tinystepsphour + k - tiny_offset;
         if (tinystep < 0) {
-          tinystep += 24*tinystepsphour; 
+          tinystep += 24*tinystepsphour;
         }
         if (tinystep > 24*tinystepsphour-1) {
-          tinystep -= 24*tinystepsphour; 
+          tinystep -= 24*tinystepsphour;
         }
         hourlyrad[i*24+j] += tiny_radfract[dmy[i*24+j].day_in_year-1][tinystep];
       }
       hourlyrad[i*24+j] *= tmp_rad;
     }
   }
-  
+
   for (i = 0; i < ctrl->ndays; i++) {
     tskc[i] = mtclim_data->s_tskc[i];
     vp[i] = mtclim_data->s_hum[i];

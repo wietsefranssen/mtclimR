@@ -178,6 +178,7 @@ makeNetcdfOut <- function(settings, mask, ncOut) {
   for (iVar in 1:length(settings$outputVars))
   {
     ncatt_put( ncid, names(settings$outputVars[iVar]), "standard_name", names(settings$outputVars[iVar]))
+    ncatt_put( ncid, names(settings$outputVars[iVar]), "long_name", settings$outputVars[[iVar]]$longName)
     ncatt_put( ncid, names(settings$outputVars[iVar]), "vic_name", settings$outputVars[[iVar]]$VICName)
     ncatt_put( ncid, names(settings$outputVars[iVar]), "units", settings$outputVars[[iVar]]$units)
   }

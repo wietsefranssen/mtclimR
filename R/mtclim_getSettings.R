@@ -32,16 +32,16 @@ mtclim_getSettings <- function() {
   ## Output variables
   ## Comment out the ones you dont want to include
   settings$outputVars <- list(
-    pr         = list(VICName = "OUT_PREC",       units = "mm"),
-    tas        = list(VICName = "OUT_AIR_TEMP",   units = "C"),
-    shortwave  = list(VICName = "OUT_SHORTWAVE",  units = "W m-2"),
-    longwave   = list(VICName = "OUT_LONGWAVE",   units = "W m-2"),
-    pressure   = list(VICName = "OUT_PRESSURE",   units = "kPa"),
-    qair       = list(VICName = "OUT_QAIR",       units = "kg kg-1"),
-    vp         = list(VICName = "OUT_VP",         units = "kPa"),
-    rel_humid  = list(VICName = "OUT_REL_HUMID",  units = "fraction"),
-    density    = list(VICName = "OUT_DENSITY",    units = "kg m-3"),
-    wind       = list(VICName = "OUT_WIND",       units = "m s-1")
+    pr         = list(VICName = "OUT_PREC",       units = "mm",        longName = "incoming precipitation"),
+    tas        = list(VICName = "OUT_AIR_TEMP",   units = "C",         longName = "air temperature"),
+    shortwave  = list(VICName = "OUT_SHORTWAVE",  units = "W m-2",     longName = "incoming shortwave"),
+    longwave   = list(VICName = "OUT_LONGWAVE",   units = "W m-2",     longName = "incoming longwave"),
+    pressure   = list(VICName = "OUT_PRESSURE",   units = "kPa",       longName = "near surface atmospheric pressure"),
+    qair       = list(VICName = "OUT_QAIR",       units = "kg kg-1",   longName = "specific humidity"),
+    vp         = list(VICName = "OUT_VP",         units = "kPa",       longName = "near surface vapor pressure"),
+    rel_humid  = list(VICName = "OUT_REL_HUMID",  units = "fraction",  longName = "relative humidity"),
+    density    = list(VICName = "OUT_DENSITY",    units = "kg m-3",    longName = "near-surface atmospheric density"),
+    wind       = list(VICName = "OUT_WIND",       units = "m s-1",     longName = "near surface wind speed")
   )
 
   return(settings)
